@@ -1,0 +1,67 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #3e3c46;
+}
+
+div.splash {
+    background-color: #ffffff;
+}
+
+div.heading div.spacer {
+    padding-top: 120px;
+}
+
+div.small-heading div.spacer {
+    padding-top: 60px;
+}
+
+div.heading h1 {
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    font-size: 60px;
+}
+
+div.small-heading h1 {
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    font-size: 30px;
+}
+
+div.heading img.logo {
+    height: 90px;
+}
+
+div.small-heading img.logo {
+    height: 45px;
+}
+
+div.heading img.robot {
+    margin-bottom: -40px;
+}
+
+div.small-heading img.robot {
+    height: 180px;
+    margin-bottom: -15px;
+}
+
+div.ground {
+    background: linear-gradient(#e9eaea, #ffffff);
+    height: 100px;
+}
+
+.cc-window {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    line-height: 1.3em;
+}
+
+.cc-banner.cc-theme-edgeless .cc-btn {
+    padding: 0.3em;
+    min-width: 50px;
+}
+
+@media screen and (max-width: 414px) and (orientation: portrait), screen and (max-width: 736px) and (orientation: landscape) {
+    .cc-window .cc-message {
+        margin: 0.5em;
+    }
+}

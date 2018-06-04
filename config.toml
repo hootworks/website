@@ -1,2 +1,12 @@
+title = "Hoot Works"
 baseURL = "https://hoot.works/"
+languageCode = "en-gb"
+enableRobotsTXT = true
 theme = "hootworks"
+
+[params]
+
+  name = "Hoot Works Limited"
+  description = ""
+
+

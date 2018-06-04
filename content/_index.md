@@ -1,5 +1,3 @@
 +++
-title = "Home sweet home"
+title = "Hoot Works"
 +++
-
-This page has **bold** and *italics* formatting.

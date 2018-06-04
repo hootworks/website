@@ -1,9 +1,29 @@
-<html>
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        {{ partial "head.html" . }}
+    </head>
     <body>
-        <h1>Welcome!</h1>
-
-        <h2>{{ .Title }}</h2>
-        {{ .Content }}
-
+        <div class="splash">
+            <div class="d-sm-none text-center small-heading">
+                <div class="spacer"></div>
+                <h1 class="pb-1">HOOT</h1>
+                <img class="logo" src="assets/img/logo.svg"/>
+                <h1 class="pt-3 pl-2">WORKS</h1>
+                <div class="text-left">
+                    <img class="pl-3 pt-2 robot" src="assets/img/robot.png"/>
+                </div>
+            </div>
+            <div class="d-none d-sm-block text-center heading">
+                <div class="spacer"></div>
+                <h1 class="d-inline pr-2 align-bottom">HOOT</h1>
+                <img class="align-top logo" src="assets/img/logo.svg"/>
+                <h1 class="d-inline pl-4 align-bottom">WORKS</h1>
+                <div class="text-left">
+                    <img class="pl-3 pt-5 robot" src="assets/img/robot.png"/>
+                </div>
+            </div>
+        </div>
+        <div class="ground"></div>
     </body>
 </html>
