@@ -11,7 +11,7 @@
                 <img class="logo" src="assets/img/logo.svg"/>
                 <h1 class="pt-3 pl-2">WORKS</h1>
                 <div class="text-left">
-                    <img class="pl-3 pt-2 robot" src="assets/img/robot.png"/>
+                    <img class="pl-3 pt-2 robot" data-src="assets/img/robot.png"/>
                 </div>
             </div>
             <div class="d-none d-sm-block text-center heading">
@@ -20,10 +20,18 @@
                 <img class="align-top logo" src="assets/img/logo.svg"/>
                 <h1 class="d-inline pl-4 align-bottom">WORKS</h1>
                 <div class="text-left">
-                    <img class="pl-3 pt-5 robot" src="assets/img/robot.png"/>
+                    <img class="pl-3 pt-5 robot" data-src="assets/img/robot.png"/>
                 </div>
             </div>
         </div>
         <div class="ground"></div>
+        <script>
+            [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
+                    img.setAttribute('src', img.getAttribute('data-src'));
+                    img.onload = function() {
+                    img.removeAttribute('data-src');
+                };
+            });
+        </script>
     </body>
 </html>

@@ -37,11 +37,25 @@ div.small-heading img.logo {
 
 div.heading img.robot {
     margin-bottom: -40px;
+    opacity: 1;
+    transition: opacity 0.3s;
 }
 
 div.small-heading img.robot {
     height: 180px;
     margin-bottom: -15px;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+div.heading img.robot[data-src] {
+    opacity: 0;
+    min-height: 411px;
+}
+
+div.small-heading img.robot[data-src] {
+    opacity: 0;
+    min-height: 180px;
 }
 
 div.ground {
