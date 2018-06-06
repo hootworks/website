@@ -70,8 +70,8 @@ div.ground {
 }
 
 .cc-banner.cc-theme-edgeless .cc-btn {
-    padding: 0.3em;
-    min-width: 50px;
+    padding: 0.6em;
+    min-width: 80px;
 }
 
 @media screen and (max-width: 414px) and (orientation: portrait), screen and (max-width: 736px) and (orientation: landscape) {
