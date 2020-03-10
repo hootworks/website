@@ -4,8 +4,9 @@ languageCode = "en-gb"
 enableRobotsTXT = true
 theme = "hootworks"
 disableKinds = ["taxonomy", "taxonomyTerm"]
+contentDir = "content"
 
 [params]
-
   name = "Hoot Works Limited"
-  description = ""
+  email = "info@hoot.works"
+  description = "Media Technology Consultancy & Software Development"

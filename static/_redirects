@@ -1,2 +1,7 @@
+# Redirect domain aliases to primary domain
+http://www.hoot.works/* https://hoot.works/:splat 301!
+
 # Redirect default Netlify subdomain to primary domain
 https://hootworks.netlify.com/* https://hoot.works/:splat 301!
+
+

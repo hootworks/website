@@ -7,6 +7,14 @@ div.splash {
     background-color: #ffffff;
 }
 
+div.splash h3 {
+    line-height: 1.5em;
+}
+
+div.splash a {
+    color: #ff3d00;
+}
+
 div.heading div.spacer {
     padding-top: 120px;
 }
@@ -58,9 +66,93 @@ div.small-heading img.robot[data-src] {
     min-height: 180px;
 }
 
+div.global-nav {
+    background: #e9eaea;
+}
+
+div.global-nav h1 {
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    font-size: 20px;
+}
+
+div.global-nav img.logo {
+    height: 30px;
+}
+
+div.global-nav a {
+    text-decoration: none;
+    color: #3e3c46;
+}
+
+div.global-nav a:hover {
+    text-decoration: none;
+    color: #ff3d00;
+}
+
 div.ground {
-    background: linear-gradient(#e9eaea, #ffffff);
-    height: 100px;
+    background: linear-gradient(#eee, #e9eaea);
+    height: 80px;
+}
+
+div.footer {
+    background: #e9eaea;
+    font-size: x-small;
+}
+
+.copyright {
+    color: #6e6c76;
+}
+
+.copyright a {
+    color: #6e6c76;
+    text-decoration: underline;
+}
+
+.content {
+    font-size: small;
+    min-height: 30em;
+}
+
+.content a {
+    color: #ff3d00;
+}
+
+.content h1 {
+    font-size: 1.8rem;
+}
+
+.content h2 {
+    font-size: 1.4rem;
+}
+
+.content h3 {
+    font-size: 1.1rem;
+}
+
+.content label {
+    font-size: small;
+}
+
+.content .form-control {
+    font-size: small;
+    border-color: #e9ecef;
+}
+
+.content .btn-primary {
+    background-color: #fff;
+    color: #3e3c46;
+    border: 1px solid #e9ecef;
+    font-weight: normal;
+    font-size: small;
+}
+
+.content .btn-primary:hover,
+.content .btn-primary:active,
+.content .btn-primary:focus {
+    color: #ff3d00 !important;
+    border-color: #ff3d00 !important;
+    background-color: #fff !important;
 }
 
 .cc-window {

@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    {{ partial "head.html" . }}
+    <body class="h-card">
+        {{ block "global-nav" . }}
+        <!-- The part of the page that begins to differ between templates -->
+        {{ end }}
+        {{ block "main" . }}
+        <!-- The part of the page that begins to differ between templates -->
+        {{ end }}
+        {{ partialCached "footer.html" . }}
+    </body>
+</html>
