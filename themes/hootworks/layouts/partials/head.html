@@ -5,7 +5,35 @@
     {{ with .Site.Params.description }}<meta name="description" content="{{ . }}" />{{ end }}
     {{ with .Site.Params.name }}<meta name="author" content="{{ . }}" />{{ end }}
 
+    <meta name="author" content="{{ .Site.Params.email }}">
+
     <title>{{ .Site.Title }}</title>
+    <meta name="subject" content="{{ .Site.Title }}">
+    {{ with .Site.Params.description }}
+    <meta name="summary" content="{{ . }}">
+    <meta name="description" content="{{ . }}">
+    {{ end }}
+
+    {{ if not .Lastmod.IsZero }}<meta name="revised" content='{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}'>{{ end }}
+
+    <meta property="og:site_name" content="{{ .Site.Title }}">
+    <meta property="og:title" content="{{ .Title }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:description" content="{{ .Site.Params.description }}">
+    <meta property="og:image" content="https://hoot.works/assets/img/logo.png">
+    <meta property="og:type" content="website">
+
+    {{ partial "twitter" . }}
+
+    <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "Organization",
+            "url": "https://hoot.works",
+            "logo": "https://hoot.works/assets/img/logo.png",
+            "name": "Hoot Works"
+        }
+    </script>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,600">
