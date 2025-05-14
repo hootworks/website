@@ -2,7 +2,7 @@
 title: "Privacy Policy"
 layout: "default"
 ---
-<em>Last Modification: 9 March 2020</em>
+*Last Modification: 9 March 2020*
 
 This Privacy Policy provides information on when and why your personal information is collected, how it is used and how it is kept secure. 
 If there are any questions regarding this Privacy Policy you can contact us by email:
