@@ -1,5 +1,8 @@
 # website
-Hoot Works website
+ website
+> Hoot Works website
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/7ff157ce-2b85-4a86-a345-7b40c9886a9b/deploy-status)](https://app.netlify.com/sites/vectronic/deploys)
 
 ## Environment Setup
 
