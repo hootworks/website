@@ -1,0 +1,13 @@
+{{ define "main" }}
+    {{ partial "news-sub-nav.html" . }}
+    <div class="container-fluid content h-entry">
+        {{ partial "item-details.html" . }}
+        <div class="row justify-content-center content-body">
+            <div class="offset-1 col-11 col-lg-8 col-xl-8 e-content">
+                {{ emojify .Content }}
+            </div>
+        </div>
+        {{ partial "sharing.html" . }}
+        {{ partial "comments.html" . }}
+    </div>
+{{ end }}

@@ -1,3 +1,11 @@
-{{ define "main" }}
-{{ partial "splash.html" . }}
-{{ end }}
+<!DOCTYPE HTML>
+<html lang="en">
+    {{ partial "head.html" . }}
+    <body class="h-card">
+        {{ block "global-nav" . }}
+        <!-- The part of the page that begins to differ between templates -->
+        {{ end }}
+        {{ partial "splash.html" . }}
+        {{ partialCached "splash-footer.html" . }}
+    </body>
+</html>

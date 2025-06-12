@@ -1,0 +1,34 @@
+{{ $store := .Store }}
+<div class="container-fluid sub-nav">
+    <div class="row justify-content-center">
+        <div class="col-2  col-lg-1 col-xl-1 pr-0"></div>
+        <div class="col-10 col-lg-8 col-xl-8">
+            <nav class="navbar navbar-expand p-0">
+                {{ $taxonomy := .Store.Get "taxonomy" }}
+                {{ $taxonomyName := .Store.Get "taxonomyName" }}
+                {{ $currentNode := . }}
+                <ul class="navbar-nav flex-wrap content-tags">
+                    <li class="nav-item pr-2">
+                        <a class="nav-link badge tag {{if eq $currentNode.Path "/tags" }} active{{end}}" href="/tags/">ALL</a>
+                    </li>
+                    {{ $title := .Title }}
+                    {{ range $name, $pages := $taxonomy }}
+                        <li class="nav-item pr-2">
+                            <a class="nav-link badge tag
+                                {{ if eq (urlize $title) $name }}
+                                    {{ $store.Set "filter" $name}}
+                                    active
+                                {{ end }}
+                                " href="/{{ $taxonomyName }}/{{ $name | urlize }}">{{ humanize $name | upper}}</a>
+                        </li>
+                    {{ end }}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{{ .Store.Set "pages" (where (where .Site.Pages "Section" "news") ".IsPage" true) }}
+{{ $filter := (.Store.Get "filter") }}
+{{ if ne $filter nil }}
+    {{ .Store.Set "pages" (where (.Store.Get "pages") "Params.tags" "intersect" (slice $filter)) }}
+{{ end }}

@@ -1,0 +1,38 @@
+{{ define "main" }}
+    {{ partial "news-sub-nav.html" . }}
+    {{ $store := .Store }}
+    <div class="container-fluid sub-nav">
+        <div class="row justify-content-center">
+            <div class="col-2  col-lg-1 col-xl-1 pr-0"></div>
+            <div class="col-10 col-lg-8 col-xl-8">
+                <nav class="navbar navbar-expand p-0">
+                    <ul class="navbar-nav flex-wrap content-tags">
+                        <li class="nav-item pr-2">
+                            <a class="nav-link badge tag {{ if eq .File.Dir "archives/" }} active {{ end }}" href="/archives/">ALL</a>
+                        </li>
+                        {{ $dir := .File.Dir }}
+                        {{ with .Site.GetPage "section" "news" }}
+                            <!-- Mon Jan 2 15:04:05 -0700 MST 2006 -->
+                            {{ range .Data.Pages.GroupByDate "2006" }}
+                                <li class="nav-item pr-2">
+                                    <a class="nav-link badge tag 
+                                    {{ if (eq $dir (printf "archives/%s/" .Key)) }}
+                                        {{ $store.Set "filter" .Key}}
+                                        active
+                                    {{ end }}
+                                    " href="/archives/{{ .Key }}">{{ .Key }}</a>
+                                </li>
+                            {{ end }}
+                        {{ end }}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {{ .Store.Set "pages" (where (where .Site.Pages "Section" "news") ".IsPage" true) }}
+    {{ $filter := (.Store.Get "filter") }}
+    {{ if ne $filter nil }}
+        {{ .Store.Set "pages" (where (.Store.Get "pages") "Date.Year" (int $filter)) }}
+    {{ end }}
+    {{ partial "news.html" . }}
+{{ end }}

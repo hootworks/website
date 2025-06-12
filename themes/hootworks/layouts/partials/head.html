@@ -1,27 +1,114 @@
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    {{ with .Site.Params.description }}<meta name="description" content="{{ . }}" />{{ end }}
-    {{ with .Site.Params.name }}<meta name="author" content="{{ . }}" />{{ end }}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
     <meta name="author" content="{{ .Site.Params.email }}">
 
-    <title>{{ .Site.Title }}</title>
-    <meta name="subject" content="{{ .Site.Title }}">
-    {{ with .Site.Params.description }}
-    <meta name="summary" content="{{ . }}">
-    <meta name="description" content="{{ . }}">
+    {{ if .IsHome }}
+        <title>{{ .Site.Title }}</title>
+        <meta name="subject" content="{{ .Site.Title }}">
+        {{ with .Site.Params.description }}
+            <meta name="summary" content="{{ . }}">
+            <meta name="description" content="{{ . }}">
+        {{ end }}
+    {{ else }}
+        <title>{{ .Title }}</title>
+        <meta name="subject" content="{{ .Title }}">
+        {{ with .Summary }}
+            <meta name="summary" content="{{ . }}">
+            <meta name="description" content="{{ . }}">
+        {{ end }}
     {{ end }}
-
     {{ if not .Lastmod.IsZero }}<meta name="revised" content='{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}'>{{ end }}
 
-    <meta property="og:site_name" content="{{ .Site.Title }}">
-    <meta property="og:title" content="{{ .Title }}">
-    <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:description" content="{{ .Site.Params.description }}">
-    <meta property="og:image" content="https://hoot.works/assets/img/logo.png">
-    <meta property="og:type" content="website">
+    {{ if eq .Section "news" }}
+        <meta property="og:site_name" content="{{ .Site.Title }}">
+        <meta property="og:title" content="{{ .Title }}">
+        <meta property="og:url" content="{{ .Permalink }}">
+        <meta property="og:description" content="{{ .Summary }}">
+        {{ with .Resources.ByType "image" }}
+            {{ range . }}
+                <meta property="og:image" content="{{ .Permalink }}">
+            {{ end }}
+        {{ end }}
+        <meta property="og:type" content="article">
+        <meta property="article:published_time" content='{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}'>
+        <meta property="article:modified_time" content='{{ .Lastmod.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}'>
+        <meta property="article:author" content="{{ .Site.Params.email }}">
+        {{ range .Params.tags }}
+            <meta property="article:tag" content="{{ . }}">
+        {{end}}
+    {{ else }}
+        <meta property="og:site_name" content="{{ .Site.Title }}">
+        <meta property="og:title" content="{{ .Title }}">
+        <meta property="og:url" content="{{ .Permalink }}">
+        <meta property="og:description" content="{{ .Site.Params.description }}">
+        <meta property="og:image" content="https://hoot.works/assets/img/logo.png">
+        <meta property="og:type" content="website">
+    {{ end }}
+
+    {{ if eq .Section "news" }}
+        <script type="application/ld+json">
+            {
+                "@context": "http://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [{
+                    "@type": "ListItem",
+                    "position": 1,
+                    "item": {
+                        "@id": "https://hoot.works/news",
+                        "name": "News"
+                    }
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "item": {
+                        "@id": "{{ .Permalink }}",
+                        "name": "{{ truncate 30 .Title }}"{{ range first 1 ( .Resources.ByType "image" ) }},
+                        "image": "{{ .Permalink }}"{{ end }}
+                    }
+                }]
+            }
+        </script>
+        <script type="application/ld+json">
+            {
+                "@context": "http://schema.org",
+                "@type": "NewsArticle",
+                "headline": "{{ .Title }}",
+                "author": "{{ .Site.Params.email }}",
+                "datePublished": "{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}",
+                "dateModified": "{{ .Lastmod.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}",
+                "publisher": {
+                    "@type": "Organization",
+                    "url": "https://hoot.works",
+                    "name": "Hoot Works",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "name": "Hoot Works",
+                        "width": "229",
+                        "height": "60",
+                        "url": "https://hoot.works/assets/img/logo.png"
+                    }
+                },
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": "{{ .Permalink }}"
+                },
+                "image": [
+                        {{ range first 1 ( .Resources.ByType "image" ) }}
+                            "{{ .Permalink }}"
+                        {{ end }}
+                        {{ if gt (len ( .Resources.ByType "image" )) 1 }}
+                            {{ range after 1 ( .Resources.ByType "image" ) }}
+                                ,"{{ .Permalink }}"
+                            {{ end }}
+                        {{ end }}
+                ]
+            }
+        </script>
+    {{ end }}
 
     <script type="application/ld+json">
         {
@@ -33,38 +120,41 @@
         }
     </script>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,600">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css"/>
     <link rel="stylesheet" href="/assets/css/main.css">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JGR54LTHDG"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     {{ "<!--[if lt IE 9]><script src=\"assets/js/html5shiv.js\"></script><script src=\"assets/js/respond.min.js\"></script><![endif]-->" | safeHTML }}
 
-    <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="assets/favicon/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="assets/favicon/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="assets/favicon/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="assets/favicon/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="assets/favicon/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="assets/favicon/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="assets/favicon/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
-    <link rel="manifest" href="assets/favicon/manifest.json">
-    <meta name="msapplication-config" content="assets/favicon/browserconfig.xml">
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/assets/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/assets/favicon/manifest.json">
+    <meta name="msapplication-config" content="/assets/favicon/browserconfig.xml">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="assets/favicon/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="/assets/favicon/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
 
+    <link rel="alternate" type="application/rss+xml" title="Hoot Works" href="https://hoot.works/index.xml">
+ 
     <script>
-        window.addEventListener("load", function(){
             let instance = new cookieconsent.Popup({
                 "palette": {
                     "popup": {
@@ -77,7 +167,9 @@
                     }
                 },
                 content: {
-                    dismiss: 'OK'
+                    dismiss: 'OK',
+                    href: '/privacy-policy',
+                    target: '_self'
                 },
                 "dismissOnTimeout": 10000,
                 "theme": "edgeless",
@@ -86,12 +178,6 @@
                 }
             });
             document.body.appendChild(instance.element);
-            [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
-                img.setAttribute('src', img.getAttribute('data-src'));
-                img.onload = function() {
-                    img.removeAttribute('data-src');
-                };
-            });
         });
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}

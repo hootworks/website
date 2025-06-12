@@ -1,36 +1,77 @@
 <div class="splash">
-    <div class="d-sm-none text-center small-heading">
+    <div class="d-md-none text-center small-heading">
         <div class="spacer"></div>
         <h1 class="pb-1">HOOT</h1>
         <img class="logo" src="assets/img/logo.svg"/>
         <h1 class="pt-3 pl-2">WORKS</h1>
-        <h6>Media Technology<br>
-            Consulting &<br>
-            Software Development</h6>
-        <small>// <a href="/contact">make contact</a></small>
-        <div class="text-left">
-            <img class="pl-3 pt-2 robot" data-src="assets/img/robot.png"/>
+        <h5>Expert consulting for media software & workflow solutions</h5>
+        <div class="row align-items-center justify-content-center">
+            <div class="col-9 text-center">
+                <p>Strategy, design & development of media software, workflows & video processing systems </li>
+                <p>Serving software vendors, broadcasters, production companies, media archives & startups </p>
+                <p>Expertise in requirements analysis, system architecture, technical planning & implementation covering the full development lifecycle</p>
+                <p>Technically rigorous & highly dependable with flexible engagement models</p>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="text-center col-3">
+                <img class="pl-3 pt-2 robot fade-in" src="assets/img/robot.png"/>
+            </div>
+            <div class="text-right col-8">
+                <br>
+                <br>
+                <br>
+                <br>
+                <!-- /&nbsp;<a href="/about">About</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                /&nbsp;<a href="/expertise">Expertise</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                /&nbsp;<a href="/news">News</a>&nbsp;&nbsp;&nbsp;&nbsp; -->
+                /&nbsp;<a href="/contact">Contact</a>
+            </div>
         </div>
     </div>
-    <div class="d-none d-sm-block text-center heading">
+    <div class="d-none d-md-block heading">
         <div class="spacer"></div>
-        <h1 class="d-inline pr-2 align-bottom">HOOT</h1>
-        <img class="align-top logo" src="assets/img/logo.svg"/>
-        <h1 class="d-inline pl-4 align-bottom">WORKS</h1>
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="text-left col-6">
-                    <img class="pl-3 pt-5 robot" data-src="assets/img/robot.png"/>
-                </div>
-                <div class="text-left col-6 align-self-center">
-                    <h3>Media Technology<br>
-                    Consulting &<br>
-                    Software Development</h3>
-                    <br>
-                    // <a href="/contact">make contact</a>
+        <div class="text-center">
+            <h1 class="d-inline pr-2 align-bottom">HOOT</h1>
+            <img class="align-top logo" src="assets/img/logo.svg"/>
+            <h1 class="d-inline pl-4 align-bottom">WORKS</h1>
+        </div>        
+        <div class="row">
+            <div class="col-3">
+            </div>
+            <div class="col-7">
+                <h5>Expert consulting for media software & workflow solutions</h5>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="text-center col-3">
+                <img class="robot fade-in pr-2" src="assets/img/robot.png"/>
+            </div>
+            <div class="col-7">
+                <ul class="bullets">
+                    <li>Strategy, design & development of media software, workflows & video processing systems </li>
+                    <li>Serving software vendors, broadcasters, production companies, media archives & startups </li>
+                    <li>Expertise in requirements analysis, system architecture, technical planning &<br>implementation covering the full development lifecycle</li>
+                    <li>Technically rigorous & highly dependable with flexible engagement models</li>
+                </ul>
+                <br>
+                <div class="text-left">
+                    &nbsp;&nbsp;&nbsp;
+                    <!-- /&nbsp;<a href="/about">About</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    /&nbsp;<a href="/expertise">Expertise</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    /&nbsp;<a href="/news">News</a>&nbsp;&nbsp;&nbsp;&nbsp; -->
+                    /&nbsp;<a href="/contact">Contact</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <div class="ground"></div>
+<script>
+    window.addEventListener("load", function() {
+        document.querySelectorAll('.fade-in').forEach(function(element) {
+            element.classList.add('show');
+        });
+    });
+</script>
+

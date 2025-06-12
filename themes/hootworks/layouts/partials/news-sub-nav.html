@@ -1,0 +1,17 @@
+<div class="container-fluid news-sub-nav">
+    <div class="row justify-content-center align-top">
+        <div class="col-2  col-lg-1 col-xl-1 pr-0"><h1>News</h1></div>
+        <div class="col-10 col-lg-8 col-xl-8">
+            <nav class="navbar navbar-expand p-0">
+                <ul class="navbar-nav flex-wrap">
+                    <li class="nav-item pr-2">
+                        <a class="nav-link{{if hasPrefix .Page.Path "/archives" }} active{{end}}" href="/archives">Archives</a>
+                    </li>
+                    <li class="nav-item pr-2">
+                        <a class="nav-link{{if hasPrefix .Page.Path "/tags" }} active{{end}}" href="/tags">Tags</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

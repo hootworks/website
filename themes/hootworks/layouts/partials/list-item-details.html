@@ -1,0 +1,19 @@
+{{ $pages := .Store.Get "pages" }}
+<div class="row justify-content-center align-top">
+    <div class="col-1 pr-0 content-date"><time class="dt-published" datetime="{{ .Date }}">{{ dateFormat "Jan 2, 2006" .Date }}</time></div>
+    <div class="col-11 col-lg-8 col-xl-8 content-title">
+        <div class="row justify-content-between align-self-start">
+            <div class="col">
+                <h1><a href="{{ .Permalink }}" class="permalink u-url p-name">{{ .Title }}</a></h1>
+                <div class="p-author h-card d-none">{{ .Site.Params.email }}</div>
+            </div>
+            {{ if .Params.tags }}
+                <div class="col-3 text-right content-tags">
+                    {{ range sort (.Params.tags) }}
+                    <a class="badge tag p-category" href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ upper . }}</a>
+                    {{ end }}
+                </div>
+            {{ end }}
+        </div>
+    </div>
+</div>

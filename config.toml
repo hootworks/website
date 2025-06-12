@@ -3,10 +3,48 @@ baseURL = "https://hoot.works/"
 languageCode = "en-gb"
 enableRobotsTXT = true
 theme = "hootworks"
-disableKinds = ["taxonomy"]
+sectionPagesMenu = "global"
+
 contentDir = "content"
+staticDir = "static"
+themesDir = "themes"
+publishDir = "public"
 
 [params]
   name = "Hoot Works Limited"
   email = "info@hoot.works"
   description = "Media Technology Consulting & Software Development"
+
+[taxonomies]
+    tag = "tags"
+
+[pagination]
+    pagerSize = 2
+
+[menu]
+    [[menu.global]]
+    identifier = "about"
+    name       = "About"
+    url        = "/about/"
+    weight     = 0
+
+    [[menu.global]]
+    identifier = "expertise"
+    name       = "Expertise"
+    url        = "/expertise/"
+    weight     = 1
+
+    [[menu.global]]
+    identifier = "news"
+    name       = "News"
+    url        = "/news/"
+    weight     = 2
+
+    [[menu.global]]
+    identifier = "contact"
+    name       = "Contact"
+    url        = "/contact/"
+    weight     = 3
+
+[markup.goldmark.renderer]
+    unsafe = true

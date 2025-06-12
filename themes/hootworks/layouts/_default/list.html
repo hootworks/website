@@ -1,0 +1,12 @@
+{{ define "main" }}
+    {{ partial "news-sub-nav.html" . }}
+
+    {{ if not (eq .Section "news") }}
+        {{ .Store.Set "taxonomyName" "tags" }}
+        {{ .Store.Set "taxonomy" .Site.Taxonomies.tags }}
+        {{ partial "sub-nav.html" . }}
+    {{ end }}
+
+    {{ .Store.Set "pages" (where (where .Site.Pages "Section" "news") ".IsPage" true) }}
+    {{ partial "news.html" . }}
+{{ end }}

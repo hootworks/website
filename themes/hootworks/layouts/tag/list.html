@@ -1,0 +1,7 @@
+{{ define "main" }}
+    {{ partial "news-sub-nav.html" . }}
+    {{ .Store.Set "taxonomyName" "tags" }}
+    {{ .Store.Set "taxonomy" .Site.Taxonomies.tags }}
+    {{ partial "sub-nav.html" . }}
+    {{ partial "news.html" . }}
+{{ end }}

@@ -1,0 +1,76 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: small;
+    background-color: #ffffff;
+    color: #333;
+    margin: 0;
+}
+
+:root {
+    --color-btn-border: #e9ecef;
+    --color-border-default: #e9ecef;
+    --color-btn-primary-disabled-border: #e9ecef;
+    --color-btn-primary-border: #e9ecef;
+    --color-accent-muted: #e9ecef;
+    --color-box-border-info: #e9ecef;
+    --color-fg-default: #333;
+    --color-btn-hover-border: #ff3d00;
+    --color-btn-primary-hover-border: #ff3d00;
+    --color-action-list-item-default-hover-bg: #ff3d00;
+    --color-social-reaction-bg-hover: #ff3d00;
+    --color-social-reaction-bg-reacted-hover: #ff3d00;
+}
+
+.gsc-main {
+    font-family: 'Montserrat', sans-serif;
+    font-size: small;
+}
+
+.gsc-main a:hover,
+.gsc-main a:active {
+    color: #ff3d00;
+}
+
+.gsc-main .octicon-smiley:hover,
+.gsc-main .octicon-smiley:active {
+     color: #ff3d00; 
+}
+
+.gsc-main button:hover:not(:disabled),
+.gsc-main button:active:not(:disabled) {
+    color: #ff3d00;
+    border-color: #ff3d00;
+}
+
+.gsc-main .btn-primary:hover:not(:disabled) {
+    color: #ff3d00;
+}
+
+.gsc-main .gsc-right-header button:hover,
+.gsc-main .gsc-right-header button:active {
+    color: inherit;
+    border-color: inherit;
+}
+
+.gsc-left-header em {
+    visibility: hidden;
+}
+
+.gsc-reactions-count {
+    text-align: left;
+    font-weight: 400;
+}
+
+.gsc-comments-count {
+    font-weight: 400;
+}
+
+#__next .gsc-reactions div.justify-center {
+    justify-content: left;
+    margin-left: 6px;
+}
+
+.gsc-reactions-popover {
+    background-color: #ffffff;
+}
+

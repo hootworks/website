@@ -1,0 +1,41 @@
+<div class="row justify-content-center content-title pt-5">
+    <div class="offset-1 col-11 col-lg-8 col-xl-8 pb-2">
+        <div class="giscus"></div>
+    </div>
+</div>
+
+<script src="https://giscus.app/client.js"
+        data-repo="hootworks/website"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkxMzU5MTYyMTY="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOCBnquM4Cqdtm"
+        data-mapping="title"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="https://hoot.works/assets/css/giscus.css"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+<script>
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>

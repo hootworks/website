@@ -1,7 +1,34 @@
-<div class="global-nav pt-2 pb-2 pl-2">
-    <a href="/">
-        <h1 class="d-inline pr-1 align-bottom">HOOT</h1>
-        <img class="align-top logo" src="/assets/img/logo.svg"/>
-        <h1 class="d-inline pl-1 align-bottom">WORKS</h1>
-    </a>
+<div class="container-fluid global-nav">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-9">
+            <nav class="navbar navbar-expand-sm p-0">
+                <a href="/">
+                    <h1 class="d-inline pr-1 align-bottom">HOOT</h1>
+                    <img class="align-top logo" src="/assets/img/logo.svg"/>
+                    <h1 class="d-inline pl-1 align-bottom">WORKS</h1>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+
+                        {{ $currentNode := . }}
+                        {{ range first 1 (sort (where .Site.Menus.global "Name" "ne" "Archives") "Weight") }}
+                            <li class="nav-item">
+                                &nbsp;&nbsp;<a class="nav-link" href="{{.URL}}">{{ .Name }}</a>
+                            </li>
+                        {{ end }}
+
+                        {{ $currentNode := . }}
+                        {{ range last (sub (len .Site.Menus.global) 2) (sort (where .Site.Menus.global "Name" "ne" "Archives") "Weight") }}
+                            <li class="nav-item">
+                                &nbsp;&nbsp;<a class="nav-link" href="{{.URL}}">{{ .Name }}</a>
+                            </li>
+                        {{ end }}
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
 </div>

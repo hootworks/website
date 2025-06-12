@@ -2,12 +2,64 @@
 <html lang="en">
     {{ partial "head.html" . }}
     <body class="h-card">
-        {{ block "global-nav" . }}
-        <!-- The part of the page that begins to differ between templates -->
-        {{ end }}
+        {{ partial "global-nav.html" . }}
         {{ block "main" . }}
         <!-- The part of the page that begins to differ between templates -->
         {{ end }}
         {{ partialCached "footer.html" . }}
+
+        <!-- Add external relative attribute to external links. This is used to render an external link icon
+            after the link and also to trap external navigation with google analytics -->
+        <script>
+            // Get all links on the page
+            Array.from(document.getElementsByTagName('a'))
+
+                // Filter for outbound links
+                .filter(link =>
+                    ((link.href.indexOf(location.host) > 8 || link.href.indexOf(location.host) === -1) &&
+                    (link.href.match(/^http:/i) || link.href.match(/^https:/i)))
+                    || link.href.match(/^mailto:/i)
+                )
+
+                // For each external link
+                .forEach(externalLink => {
+
+                    // Set rel attribute as external to ensure styling applied
+                    if (externalLink.rel && externalLink.rel !== '') {
+                        externalLink.rel += " external";
+                    }
+                    else {
+                        externalLink.rel = "external";
+                    }
+
+                    // Save old onclick handler (if it exists) and install new one
+                    let oldOnClick = externalLink.onclick;
+                    externalLink.onclick = function(event) {
+
+                        // Test if Google Analytics loaded
+                        if (window.ga && ga.create) {
+
+                            // Send tracking event
+                            gtag('event', 'click', {
+                                'event_category': 'outbound',
+                                'event_label': externalLink.href,
+                                'transport_type': 'beacon',
+                                'event_callback': function() {
+                                    document.location = externalLink.href;
+                                }
+                            });
+                        }
+                        else {
+                            document.location = externalLink.href;
+                        }
+
+                        // Invoke replaced onclick handler if it existed
+                        if (oldOnClick) {
+                            return oldOnClick.call(this, event);
+                        }
+                        return false;
+                    }
+                });
+        </script>
     </body>
 </html>
