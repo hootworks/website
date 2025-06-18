@@ -1,0 +1,44 @@
+{{ define "global-nav" }}
+{{ partial "global-nav.html" . }}
+{{ end }}
+{{ define "main" }}
+   <div class="d-lg-none container-fluid content pt-4 pb-4">
+        <div class="row justify-content-center align-items-start">
+            <div class="col-12 col-lg-9 col-xl-9">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-start">
+            <div class="col-10 col-lg-7 col-xl-7">
+                {{ emojify .Content }}
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-start">
+            <div class="col-10 col-lg-7 col-xl-7">
+                <div width="100%"  class="badge-base LI-profile-badge" data-locale="en_US" data-size="medium"
+                data-theme="light" data-type="VERTICAL" data-vanity="nickryan" data-version="v1">
+                    <a class="badge-base__link LI-simple-link" href="https://uk.linkedin.com/in/nickryan?trk=profile-badge"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-none d-lg-block container-fluid content pt-4 pb-4">
+        <div class="row justify-content-center align-items-start">
+            <div class="col-12 col-lg-9 col-xl-9">
+                <h1>{{ .Title }}</h1>
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-start">
+            <div class="col-10 col-lg-7 col-xl-7">
+                {{ emojify .Content }}
+            </div>
+            <div class="col-2 col-lg-2 col-xl-2 justify-content-start">
+                <div width="100%"  class="badge-base LI-profile-badge" data-locale="en_US" data-size="medium"
+                data-theme="light" data-type="VERTICAL" data-vanity="nickryan" data-version="v1">
+                    <a class="badge-base__link LI-simple-link" href="https://uk.linkedin.com/in/nickryan?trk=profile-badge"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://platform.linkedin.com/badges/js/profile.js" async defer type="text/javascript"></script>
+{{ end }}

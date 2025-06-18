@@ -155,30 +155,29 @@
     <link rel="alternate" type="application/rss+xml" title="Hoot Works" href="https://hoot.works/index.xml">
  
     <script>
-            let instance = new cookieconsent.Popup({
-                "palette": {
-                    "popup": {
-                        "background": "#e9eaea",
-                        "text": "#6e6f73"
-                    },
-                    "button": {
-                        "background": "#6e6f73",
-                        "text": "#e9eaea"
-                    }
+        let instance = new cookieconsent.Popup({
+            "palette": {
+                "popup": {
+                    "background": "#e9eaea",
+                    "text": "#6e6f73"
                 },
-                content: {
-                    dismiss: 'OK',
-                    href: '/privacy-policy',
-                    target: '_self'
-                },
-                "dismissOnTimeout": 10000,
-                "theme": "edgeless",
-                "location": {
-                    "services": ["ipinfo", "maxmind"]
+                "button": {
+                    "background": "#6e6f73",
+                    "text": "#e9eaea"
                 }
-            });
-            document.body.appendChild(instance.element);
+            },
+            content: {
+                dismiss: 'OK',
+                href: '/privacy-policy',
+                target: '_self'
+            },
+            "dismissOnTimeout": 10000,
+            "theme": "edgeless",
+            "location": {
+                "services": ["ipinfo", "maxmind"]
+            }
         });
+        document.body.appendChild(instance.element);
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());

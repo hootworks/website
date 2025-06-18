@@ -35,12 +35,6 @@ publishDir = "public"
     weight     = 1
 
     [[menu.global]]
-    identifier = "news"
-    name       = "News"
-    url        = "/news/"
-    weight     = 2
-
-    [[menu.global]]
     identifier = "contact"
     name       = "Contact"
     url        = "/contact/"
