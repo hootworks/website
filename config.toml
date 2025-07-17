@@ -19,7 +19,7 @@ publishDir = "public"
     tag = "tags"
 
 [pagination]
-    pagerSize = 2
+    pagerSize = 3
 
 [menu]
     [[menu.global]]
@@ -33,6 +33,12 @@ publishDir = "public"
     name       = "Expertise"
     url        = "/expertise/"
     weight     = 1
+
+    [[menu.global]]
+    identifier = "news"
+    name       = "News"
+    url        = "/news/"
+    weight     = 2
 
     [[menu.global]]
     identifier = "contact"
