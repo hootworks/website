@@ -7,3 +7,8 @@
     [context.production.environment]
         HUGO_VERSION = "0.146.4"
         HUGO_ENV = "production"
+
+[[headers]]
+  for = "/assets/css/giscus.css"
+    [headers.values]
+    Access-Control-Allow-Origin = "https://giscus.app"
