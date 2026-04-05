@@ -273,8 +273,6 @@ a.tag.active {
 
 .content h1 {
     font-size: 1.8rem;
-    padding-top: 0.5em;
-    padding-bottom: 0.8em;
 }
 
 .content h2 {
@@ -324,8 +322,7 @@ a.tag.active {
 }
 
 .content-title h1 {
-    line-height: 14px;
-    vertical-align: text-top;
+    line-height: 1.5;
     padding-bottom: 0.5em;
 }
 
