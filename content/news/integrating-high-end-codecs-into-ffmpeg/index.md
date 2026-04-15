@@ -39,7 +39,7 @@ The solution we implemented is based on three layers:
 2. A thin integration layer (patches)
 3. Standalone C++ wrapper libraries around each SDK
 
-#### 1. C++ Wrapper Libraries
+**1. C++ Wrapper Libraries**
 
 We implemented standalone shared libraries that:
 
@@ -49,7 +49,7 @@ We implemented standalone shared libraries that:
 
 The important design constraint here is that these libraries are **not FFmpeg-aware**. They don’t include FFmpeg headers, and they don’t depend on FFmpeg types or runtime behaviour. From their perspective, they are just decode libraries with a C interface.
 
-#### 2. FFmpeg Integration Patches
+**2. FFmpeg Integration Patches**
 
 On the FFmpeg side, we added patches that:
 
