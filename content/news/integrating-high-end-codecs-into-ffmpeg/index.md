@@ -1,5 +1,5 @@
 ---
-title: Integrating High-End Codecs into FFmpeg: JPEG 2000 and R3D
+title: Integrating High-End Codecs into FFmpeg - JPEG 2000 and R3D
 date: 2026-04-15
 tags: 
 - ffmpeg
