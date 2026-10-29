@@ -400,57 +400,57 @@ a.tag.active {
     }
 }
 
-.resp-sharing-button__link,
-.resp-sharing-button__icon {
+.hw-relay__link,
+.hw-relay__icon {
     display: inline-block
 }
 
-.resp-sharing-button__link {
+.hw-relay__link {
     text-decoration: none;
 }
 
-.resp-sharing-button {
+.hw-relay {
     border-radius: 5px;
     transition: 25ms ease-out;
     padding: 0.3em 0.5em;
     border: 1px solid #e9ecef;
 }
 
-.resp-sharing-button:hover,
-.resp-sharing-button:active {
+.hw-relay:hover,
+.hw-relay:active {
     border-color: #ff3d00;
     fill: #ff3d00;
 }
 
-.resp-sharing-button__icon svg {
+.hw-relay__icon svg {
     width: 1em;
     height: 1em;
     margin-right: 0.4em;
     vertical-align: top
 }
 
-.resp-sharing-button--small svg {
+.hw-relay--small svg {
     margin: 0;
     vertical-align: middle
 }
 
-.resp-sharing-button__icon--solid {
+.hw-relay__icon--solid {
     stroke: none;
 }
 
-.resp-sharing-button--email {
+.hw-relay--email {
     fill: #777;
 }
 
-.resp-sharing-button--reddit {
+.hw-relay--reddit {
     fill: #5f99cf;
 }
 
-.resp-sharing-button--linkedin {
+.hw-relay--linkedin {
     fill: #0077b5;
 }
 
-.resp-sharing-button--hackernews {
+.hw-relay--hackernews {
     fill: #ff6600;
 }
 
