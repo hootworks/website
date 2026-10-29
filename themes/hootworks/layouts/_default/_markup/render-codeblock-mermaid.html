@@ -1,0 +1,11 @@
+{{- if eq .Type "mermaid" -}}
+<pre class="mermaid">
+{{- .Inner | htmlEscape | safeHTML }}
+</pre>
+{{- .Page.Store.Set "hasMermaid" true }}
+{{- else if .Type -}}
+{{- transform.Highlight .Inner .Type .Options }}
+{{- else -}}
+<pre tabindex="0"><code>{{ .Inner | htmlEscape | safeHTML }}
+</code></pre>
+{{- end -}}

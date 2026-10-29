@@ -236,6 +236,11 @@ body {
     padding-bottom: 0em;
 }
 
+/* the 8px line-height above is less than a tag's height, so space out wrapped rows */
+.sub-nav .navbar-nav {
+    row-gap: 1em;
+}
+
 a.tag {
     font-size: xx-small;
     color: #ff3d00;
@@ -321,6 +326,19 @@ a.tag.active {
     font-size: small;
 }
 
+/* below lg the date and tag columns are sized to their content: stack the date
+   one word per line and the tags one per line */
+@media (max-width: 991.98px) {
+    .content-date time {
+        display: inline-block;
+        width: min-content;
+    }
+
+    .content-title .content-tags {
+        width: min-content;
+    }
+}
+
 .content-title h1 {
     line-height: 1.5;
     padding-bottom: 0.5em;
@@ -382,57 +400,57 @@ a.tag.active {
     }
 }
 
-.resp-sharing-button__link,
-.resp-sharing-button__icon {
+.hw-relay__link,
+.hw-relay__icon {
     display: inline-block
 }
 
-.resp-sharing-button__link {
+.hw-relay__link {
     text-decoration: none;
 }
 
-.resp-sharing-button {
+.hw-relay {
     border-radius: 5px;
     transition: 25ms ease-out;
     padding: 0.3em 0.5em;
     border: 1px solid #e9ecef;
 }
 
-.resp-sharing-button:hover,
-.resp-sharing-button:active {
+.hw-relay:hover,
+.hw-relay:active {
     border-color: #ff3d00;
     fill: #ff3d00;
 }
 
-.resp-sharing-button__icon svg {
+.hw-relay__icon svg {
     width: 1em;
     height: 1em;
     margin-right: 0.4em;
     vertical-align: top
 }
 
-.resp-sharing-button--small svg {
+.hw-relay--small svg {
     margin: 0;
     vertical-align: middle
 }
 
-.resp-sharing-button__icon--solid {
+.hw-relay__icon--solid {
     stroke: none;
 }
 
-.resp-sharing-button--email {
+.hw-relay--email {
     fill: #777;
 }
 
-.resp-sharing-button--reddit {
+.hw-relay--reddit {
     fill: #5f99cf;
 }
 
-.resp-sharing-button--linkedin {
+.hw-relay--linkedin {
     fill: #0077b5;
 }
 
-.resp-sharing-button--hackernews {
+.hw-relay--hackernews {
     fill: #ff6600;
 }
 
@@ -443,4 +461,17 @@ a.tag.active {
     background: #f8f9fa;
     padding: 4px;
     transition: box-shadow 0.2s;
+}
+
+:root {
+    --mermaid-scale: 0.8;
+    --mermaid-class-font-size: 13px;
+}
+
+@media (min-width: 768px) {
+    pre.mermaid {
+        width: calc(var(--mermaid-scale) * 100%);
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
