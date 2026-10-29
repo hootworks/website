@@ -15,7 +15,7 @@
         </div>
         <div class="row justify-content-center align-items-start">
             <div class="col-10 col-lg-7 col-xl-7">
-                <iframe src="/linkedin.html" frameborder="0" height="259" width="310" style="display: block;"></iframe>
+                <iframe src="/linkedin.html" frameborder="0" height="259" width="252" style="display: block;"></iframe>
             </div>
         </div>
     </div>
@@ -26,11 +26,15 @@
             </div>
         </div>
         <div class="row justify-content-center align-items-start">
-            <div class="col-10 col-lg-7 col-xl-7">
-                {{ emojify .Content }}
-            </div>
-            <div class="col-2 col-lg-2 col-xl-2 justify-content-start">
-                <iframe src="/linkedin.html" frameborder="0" height="259" width="310" style="display: block;"></iframe>
+            <div class="col-lg-9 col-xl-9">
+                <div class="row align-items-start">
+                    <div class="col">
+                        {{ emojify .Content }}
+                    </div>
+                    <div class="col-auto">
+                        <iframe src="/linkedin.html" frameborder="0" height="259" width="252" style="display: block;"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
