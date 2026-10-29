@@ -8,6 +8,30 @@
         {{ end }}
         {{ partialCached "footer.html" . }}
 
+        {{ if .Store.Get "hasMermaid" }}
+        <script type="module">
+            import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+            /* stop mermaid rendering on the page load event (with its default theme) while waiting for fonts below */
+            mermaid.initialize({ startOnLoad: false });
+            /* use the body font, loaded first so mermaid measures text with it, and the sizes set in main.css */
+            await document.fonts.ready;
+            const css = getComputedStyle(document.documentElement);
+            const fontFamily = getComputedStyle(document.body).fontFamily;
+            const classFontSize = css.getPropertyValue("--mermaid-class-font-size").trim() || "16px";
+            const scale = parseFloat(css.getPropertyValue("--mermaid-scale")) || 1;
+            const nodes = [...document.querySelectorAll("pre.mermaid")];
+            const isClass = n => n.textContent.trim().startsWith("classDiagram");
+            mermaid.initialize({ startOnLoad: false, theme: "neutral", themeVariables: { fontFamily } });
+            await mermaid.run({ nodes: nodes.filter(n => !isClass(n)) });
+            mermaid.initialize({ startOnLoad: false, theme: "neutral", themeVariables: { fontFamily, fontSize: classFontSize } });
+            await mermaid.run({ nodes: nodes.filter(isClass) });
+            /* scale each diagram's natural size by --mermaid-scale */
+            document.querySelectorAll("pre.mermaid svg").forEach(svg => {
+                svg.style.maxWidth = (svg.viewBox.baseVal.width * scale) + "px";
+            });
+        </script>
+        {{ end }}
+
         <!-- Add external relative attribute to external links. This is used to render an external link icon
             after the link and also to trap external navigation with google analytics -->
         <script>

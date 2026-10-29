@@ -444,3 +444,16 @@ a.tag.active {
     padding: 4px;
     transition: box-shadow 0.2s;
 }
+
+:root {
+    --mermaid-scale: 0.8;
+    --mermaid-class-font-size: 13px;
+}
+
+@media (min-width: 768px) {
+    pre.mermaid {
+        width: calc(var(--mermaid-scale) * 100%);
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
