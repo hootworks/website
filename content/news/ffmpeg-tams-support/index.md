@@ -1,6 +1,6 @@
 ---
 title: Time-addressable Media Store (TAMS) support for FFmpeg
-date: 2026-11-06
+date: 2026-11-05
 tags:
 - ffmpeg
 - tams
