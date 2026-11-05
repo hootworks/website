@@ -7,7 +7,7 @@ tags:
 
 ---
 
-As part of recent work delivered for a client, we added support to FFmpeg's MXF demuxer for reading *growing* MXF files: files which are still being written by another process, such as an ingest server recording a live feed.
+As part of recent work delivered for a client, we added support to FFmpeg's MXF demuxer for reading *growing* MXF files i.e. files which are still being written by another process, such as an ingest server recording a live feed.
 
 This lets anything built on FFmpeg start working with content while it is still being recorded, rather than waiting for the recording to finish.
 

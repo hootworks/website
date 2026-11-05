@@ -358,9 +358,10 @@ A few things which came up during the implementation and testing:
 * Flows using separate initialisation segments (`init_object`, new in 8.2) - these are rejected with a clear error
 * Flow profiles, webhooks, and Flow/Source tag and label editing beyond what is set at creation
 * Obtaining or refreshing OAuth tokens: a bearer token must be supplied via `-headers`
-* Raw video or PCM segments with no container: the demuxer detects segment formats by probing rather than from the Flow's `container`, and these have nothing to probe (the muxer stores them in MOV/MP4)
+* Raw video or PCM segments with no container: the demuxer detects segment formats by probing rather than from the Flow's `container`, and these have nothing to probe (the muxer stores them in Matroska/MP4)
 * Muxing to MXF or Ogg (Ogg does not split cleanly into independent segments, so Vorbis uses Matroska)
 * MP4 multi Flows containing AAC are placed about 21ms late on the Flow timeline (A/V sync is unaffected)
+* Seeking with `-ss` in Flows stored as raw H.264 or HEVC elementary streams is only accurate to the segment: these streams carry no timestamps, so ffmpeg cannot discard the frames between the start of the segment and the seek point, and output starts at the beginning of the segment containing the seek point. Flows in a container (MP4, MPEG-TS, Matroska) seek accurately
 
 ### Testing
 
