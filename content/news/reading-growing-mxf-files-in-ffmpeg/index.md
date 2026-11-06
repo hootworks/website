@@ -60,7 +60,7 @@ For MPEG-2 and H.264 the index file also records each frame's temporal offset, d
 
 The index file is useful in its own right: any other process (not just FFmpeg) can read the header to find how much of the recording is available.
 
-### Index Writer and Readers
+### Index Writer and Index Readers
 
 Exactly one FFmpeg process (or other libavformat-based application) maintains the sidecar. Every process which opens the growing file with the same `growing_index_file` takes one of two roles:
 
@@ -84,7 +84,6 @@ The roles are not fixed due to the fact that processes may come and go. If the w
 
 A writer isn't a separate indexing process. It is an ordinary FFmpeg process,
 transcoding or playing the file like any reader. But it happens to hold the writer lock and therefore takes responsibility for writing the index file.
-
 A writer builds the index as a side effect of its own demuxing: each time it reads an edit unit of the reference track, it appends an entry to the sidecar.
 
 A writer's reading and seeking use the same index file:
@@ -162,9 +161,7 @@ into the growing file it makes sense to start a single initial process acting as
 when the recording starts and to keep it reading near the live edge e.g. an ffprobe dumping packets. This ensures that an index file covering the entire recording up to the live edge will be available for use by other processes e.g. for rendering or playout. 
 
 
-### Challenges
-
-A few of the things which make this harder than it first appears:
+### Further Details
 
 **Static File Assumption**
 
@@ -216,10 +213,11 @@ For long-GOP codecs, presentation timestamps depend on the temporal offsets in t
 
 Finishing an MXF file takes several writes (the footer, the Random Index Pack and then updating the header) and the demuxer can look at the file between any of them. The demuxer only treats the file as complete once it has confirmed a footer partition is really there, so that a half-written index pack or header is never mistaken for the end. It also ensures that essence bytes which happen to look like MXF keys are never mistaken for a footer.
 
-
 **File Completion Handling**
 
 When the footer arrives, the demuxer rebuilds its index from the footer's index table segments and continues exactly as it would for a closed file.    
+
+---
 
 ### Need Help?
 
