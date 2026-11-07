@@ -7,15 +7,18 @@ tags:
 
 ---
 
-I have been working on adding support for the [Time-addressable Media Store](https://tams.org) (TAMS) to FFmpeg. This includes
-a demuxer that reads Flows and Sources from a TAMS store, and a muxer that writes one of more Flows or Multi-Flows to a TAMS store.
-Both live and non-live Flows are supported.
+I have been working on adding support for the [Time-addressable Media Store](https://tams.org) (TAMS) to FFmpeg. This includes:
+
+* a demuxer that reads Flows, Multi Flows and Sources from a TAMS store
+* a muxer that writes one of more Flows or Multi-Flows to a TAMS store
+
+Both live and non-live Sources are supported.
 
 The work is available on the [`tams` branch](https://github.com/hootworks/FFmpeg/tree/tams) of our FFmpeg fork as a series of three patches which is being prepared to submit upstream.
 
 <!--more-->
 
-### What is TAMS?
+### TAMS Overview
 
 TAMS is an open API specification, started by BBC R&D and now developed with a growing group of broadcasters and vendors, for storing media in the cloud as small time-addressable chunks rather than as monolithic files.
 
@@ -30,9 +33,7 @@ Because media is stored as immutable, independently addressable segments on a sh
 
 The API spec is here: [https://github.com/bbc/tams](https://github.com/bbc/tams).
 
-### Why FFmpeg?
-
-A store is only useful if tools can get media in and out of it. Having TAMS supported natively in FFmpeg means anything which uses FFmpeg (ffmpeg, ffprobe, ffplay or any application built on libavformat) can read from and write to a TAMS store.
+However, a store is only useful if tools can get media in and out of it. Having TAMS supported natively in FFmpeg means anything which uses FFmpeg (ffmpeg, ffprobe, ffplay or any application built on libavformat) can read from and write to a TAMS store.
 
 ### Demuxer Usage
 
@@ -476,7 +477,7 @@ The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims 
 ### Testing
 
 The patches include unit tests for the JSON parsing, timestamp and timerange handling, the demuxer's segment, timestamp and URL timerange logic and the muxer's `-flow_map` parsing. FATE tests also include demuxing TAMS samples.
-The FATE samples are store responses and segment objects saved as local files. A file URL input is read as a complete response: no query strings are added, a single page of segments is expected and Flows are not re-fetched.
+The FATE samples ([tams-fate-samples.tar.gz](/assets/download/tams-fate-samples.tar.gz)) are store responses and segment objects saved as local files. A file URL input is read as a complete response: no query strings are added, a single page of segments is expected and Flows are not re-fetched.
 
 Manual testing has been performed against a hosted instance of the AWS open-source TAMS implementation (API 8.2):
 
