@@ -48,3 +48,6 @@ publishDir = "public"
 
 [markup.goldmark.renderer]
     unsafe = true
+
+[markup.highlight]
+    noClasses = false

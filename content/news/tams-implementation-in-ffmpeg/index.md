@@ -469,11 +469,11 @@ The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims 
 ### Known Limitations
 
 * Raw video or PCM segments with no container. Based on the standard ffmpeg design the demuxer detects segment formats by probing rather than from the Flow's specified `container`. As such raw source have nothing to probe they cannot currently be handled. For this reason the muxer implementation always stores such uncompressed data in Matroska or MP4 containers.
-* Ogg (Ogg does not split cleanly into independent segments, so Vorbis is supported in Matroska).
+* Ogg does not split cleanly into independent segments, so Vorbis is only supported in Matroska.
 * MP4 multi Flows containing AAC are placed about 21ms late on the Flow timeline (A/V sync is unaffected).
 * Seeking with `-ss` in Flows stored as raw H.264 or HEVC elementary streams is only accurate to a segment boundary. These streams carry no timestamps, so ffmpeg cannot discard the frames between the start of the segment and the seek point.
 * Presigned URLs only. The muxer only requests presigned upload URLs from the store, and the demuxer prefers a segment's presigned `get_urls`. The store's credentials (`-headers`) are only sent to the store's own host, so a segment which only has non-presigned URLs on another host, such as an object store that needs its own credentials, can only be read if that storage allows anonymous access.
-* JSON `\uXXXX` escapes. Strings in the store's JSON responses are read as UTF-8, and non-ASCII characters sent as literal UTF-8 are kept. However, characters sent as `\uXXXX` escapes are replaced with `?`. This only affects labels, descriptions and tags written that way, unless a store escapes characters in URLs: for example Go's `encoding/json` escapes `&` as `&` by default, which would break presigned URLs.
+* JSON `\uXXXX` escapes. Strings in the store's JSON responses are read as UTF-8, and non-ASCII characters sent as literal UTF-8 are kept. However, characters sent as `\uXXXX` escapes are replaced with `?`. This mainly affects labels, descriptions and tags written that way, but a store which escaped characters in URLs this way would produce URLs that cannot be fetched.
 
 ### Testing
 

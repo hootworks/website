@@ -475,3 +475,13 @@ a.tag.active {
         margin-right: auto;
     }
 }
+
+/* code blocks: light panel to match the page (colours from syntax.css, hugo gen chromastyles --style=github) */
+.highlight pre.chroma {
+    background-color: #f8f9fa;
+    border: 1px solid #e9eaea;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}

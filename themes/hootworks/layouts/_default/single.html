@@ -4,7 +4,7 @@
         {{ partial "item-details.html" . }}
         <div class="row justify-content-center content-body">
             <div class="offset-1 col-11 col-lg-8 col-xl-8 e-content">
-                {{ emojify .Content }}
+                {{ .Content }}
             </div>
         </div>
         {{ partial "sharing.html" . }}
