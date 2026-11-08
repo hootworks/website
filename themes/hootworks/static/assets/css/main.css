@@ -476,7 +476,6 @@ a.tag.active {
     }
 }
 
-/* code blocks: light panel to match the page (colours from syntax.css, hugo gen chromastyles --style=github) */
 .highlight pre.chroma {
     background-color: #f8f9fa;
     border: 1px solid #e9eaea;
