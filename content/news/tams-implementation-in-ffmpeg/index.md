@@ -1,5 +1,5 @@
 ---
-title: Time-addressable Media Store (TAMS) implementation in FFmpeg
+title: Time-Addressable Media Store (TAMS) implementation in FFmpeg
 date: 2026-11-05
 tags:
 - ffmpeg
@@ -7,12 +7,12 @@ tags:
 
 ---
 
-I have been working on adding support for the [Time-addressable Media Store](https://tams.org) (TAMS) to FFmpeg. This includes:
+I have been working on adding support for the [Time-Addressable Media Store](https://tams.org) (TAMS) to FFmpeg. This includes:
 
 * a demuxer that reads Flows, Multi Flows and Sources from a TAMS store
 * a muxer that writes one of more Flows or Multi-Flows to a TAMS store
 
-Both live and non-live Sources are supported.
+Both live and non-live Flows are supported.
 
 The work is available on the [`tams` branch](https://github.com/hootworks/FFmpeg/tree/tams) of our FFmpeg fork as a series of three patches which is being prepared to submit upstream.
 
@@ -20,14 +20,13 @@ The work is available on the [`tams` branch](https://github.com/hootworks/FFmpeg
 
 ### TAMS Overview
 
-TAMS is an open API specification, started by BBC R&D and now developed with a growing group of broadcasters and vendors, for storing media in the cloud as small time-addressable chunks rather than as monolithic files.
+TAMS is an open API specification, started by BBC R&D and now developed with a growing group of broadcasters and vendors.
+It defines storage of media in the cloud as small time-addressable chunks rather than as monolithic files. The core concepts are:
 
-The core concepts are:
-
-* **Sources** - an abstract piece of content, e.g. "the camera 1 feed" or "episode 3"
-* **Flows** - a concrete representation of a Source, e.g. "1080p H.264 at 8Mbps" or "stereo AAC". Flows can be video, audio, data, image or *multi* (a collection of other Flows)
-* **Segments** - Media Objects (a small MPEG-TS, MP4, raw elementary stream etc.) registered against a Flow for a given timerange
-* **Timeranges** - everything is addressed on a nanosecond TAI timeline, e.g. `[1792591960:585251000_1792591966:585251000)`
+* **Sources**: an abstract piece of content, e.g. "the camera 1 feed" or "episode 3"
+* **Flows**: a concrete representation of a Source, e.g. "1080p H.264 at 8Mbps" or "stereo AAC". Flows can be video, audio, data, image or *multi* (a collection of other Flows)
+* **Segments**: Media Objects (a small MPEG-TS, MP4, raw elementary stream etc.) registered against a Flow for a given timerange
+* **Time Ranges**: everything is addressed on a nanosecond TAI timeline, e.g. `[1792591960:585251000_1792591966:585251000)`
 
 Because media is stored as immutable, independently addressable segments on a shared timeline, it becomes possible to start working with content while it is still being recorded, to make edits by reference instead of by copy, and to share objects between Flows.
 
@@ -57,7 +56,7 @@ ffmpeg -headers "$AUTH" -i "$TAMS/flows?source_id=<sourceId>" \
   -map 0:v:0 -map 0:a:0 -c copy programme.mp4
 ```
 
-**Clip a timerange.** A `timerange` in the URL limits the read to that window. Only the segments which overlap it are fetched, and any packets before its start which are needed to decode the first frames are discarded:
+**Clip a timerange.** A `timerange` in the URL limits the read to that window. Only the segments which overlap it are fetched. When the start falls part way through a GOP, the packets from the preceding keyframe are still read, as they are needed to decode the first frames. With stream copy, as here, they are kept, so the clip starts at that keyframe, slightly before the requested start. When re-encoding, they are decoded and then dropped, so the output starts exactly at the start of the timerange:
 
 ```shell script
 ffmpeg -headers "$AUTH" \
