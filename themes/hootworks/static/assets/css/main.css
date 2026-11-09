@@ -291,13 +291,11 @@ a.tag.active {
 /* below h3, which is smaller than Bootstrap's h4-h6 defaults */
 .content h4 {
     font-size: 1rem;
-    font-weight: 600;
 }
 
 .content h5,
 .content h6 {
     font-size: 0.95rem;
-    font-weight: 600;
 }
 
 .content a:hover,

@@ -355,7 +355,7 @@ sequenceDiagram
 
 #### Muxer
 
-The muxer writes each input `AVStream` to a Flow. By default every stream gets its own mono Flow. The option `-flow_map` can be used to group streams into a multi Flow sharing one container or pin streams to existing Flows and Sources.
+The muxer writes each input `AVStream` to a Flow. By default every stream gets its own mono Flow. The option `-flow_map` can be used to group streams into a multi Flow sharing one container or to pin streams to existing Flows and Sources.
 
 Each segment is produced by a nested muxer (raw elementary stream, MP4, MOV, MPEG-TS or Matroska), uploaded to a presigned storage URL obtained from the store and then registered against the Flow with its timerange.
 
@@ -418,9 +418,13 @@ sequenceDiagram
     CLI->>Mux: write_header
     Mux->>Mux: validate streams (codec MIME + essence parameters)
     Mux->>Sub: build one nested muxer per container
-    Mux->>TAMS: GET pinned Flows / PUT new Flows (status ingesting)
     Mux->>TAMS: GET /service
+    Mux->>TAMS: GET pinned Flows, validate them and segment_duration
+    Mux->>TAMS: PUT new Flows (status ingesting)
     Mux->>TAMS: POST /flows/{id}/storage (presigned URL for segment 0)
+    opt write_header fails after a PUT
+        Mux->>TAMS: DELETE the Flows it created
+    end
     CLI->>Mux: write_packet ...
     Mux->>Sub: buffer packets until the first keyframe after segment_duration
     Mux->>TAMS: PUT segment packet bytes, POST /flows/{id}/segments
@@ -442,11 +446,9 @@ Implementing support for Timeranges was more involved than expected. So I am rec
 | `_` | eternity: all time | `(_)` |
 | `()` | never: the empty range | `()` |
 
-`TAMSTimeRange` keeps a separate `never` flag so that "empty" and "never" can't be confused.
-
 **Intersecting Timeranges**
 
-`ff_tams_timerange_intersect()` takes the later start and the earlier end of two timeranges. Each end is set to inclusive only if both ranges specify inclusive. It returns never if the ranges do not overlap.
+`ff_tams_timerange_intersect()` takes the later start and the earlier end of two timeranges. Each end is set to inclusive only if both timeranges specify inclusive. It returns never if the timeranges do not overlap.
 
 **`()` Interpretation**
 
@@ -457,6 +459,8 @@ A multi Flow whose media is all in its members' containers is also always `()`.
 A Flow that had **no** timerange in the JSON response also has
 a timerange stored as `never` but in this case it means the timerange is unknown.
 
+`TAMSTimeRange` keeps a separate `never` flag because never `()` and eternity `_` both have no start and no end time. Without the flag they could not be told apart, although one contains no time at all and the other contains all time.
+
 **Optional Timerange In Flow JSON**
 
 The spec only returns a Flow's timerange from `GET /flows/{id}` when `include_timerange=true` is given. The demuxer can't change the first request as FFmpeg opens the URL specified on the command line and probes the response before the demuxer is chosen. Therefore for a Flow without a timerange the muxer makes a second request with `include_timerange=true`.
@@ -466,7 +470,7 @@ The spec only returns a Flow's timerange from `GET /flows/{id}` when `include_ti
 A `timerange=` in the opened URL  means different things to the store depending on the URL:
 
 * on `/flows/{id}` it limits the timerange returned for the Flow.
-* on `/flows?source_id=...` it filters which Flows are returned. A Flow which overlaps the range is returned with its full timerange. 
+* on `/flows?source_id=...` it only filters which Flows are listed: a Flow is listed if its timerange overlaps the requested one, but the `timerange` returned for it is still the Flow's whole timerange, not just the overlap. The demuxer therefore intersects each listed Flow's timerange with the requested one itself.
 * A multi Flow's own `()` timerange never overlaps, so its members need to be asked for by `/flows/{id}`
 
 **Intersected Timerange Logic**
