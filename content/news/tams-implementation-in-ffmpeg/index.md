@@ -28,22 +28,32 @@ It defines storage of media in the cloud as small time-addressable chunks rather
 * **Segments**: Media Objects (a small MPEG-TS, MP4, raw elementary stream etc.) registered against a Flow for a given timerange
 * **Timeranges**: everything is addressed on a nanosecond TAI timeline, e.g. `[1792591960:585251000_1792591966:585251000)`
 
-Because media is stored as immutable, independently addressable segments on a shared timeline, it becomes possible to start working with content while it is still being recorded, to make edits by reference instead of by copy, and to share objects between Flows.
-
 The API spec is here: [https://github.com/bbc/tams](https://github.com/bbc/tams).
+
+Because media is stored as immutable, independently addressable segments on a shared timeline it enabled:
+
+* working with content while it is still being recorded
+* making edits by reference instead of by copy
+* sharing objects between Flows
 
 However, a store is only useful if tools can get media in and out of it. Having TAMS supported natively in FFmpeg means anything which uses FFmpeg (ffmpeg, ffprobe, ffplay or any application built on libavformat) can read from and write to a TAMS store.
 
+`\(^ヮ^)/`
+
+Below is an overview of how the demuxer and muxer can be used followed by some implementation details and a collection of notes made along the way.
+
 ### Demuxer Usage
 
-The demuxer is selected automatically from the store's `/flows` URL. The examples below assume a store at `$TAMS` and a bearer token in `$TOKEN`:
+The demuxer is selected automatically by probing when specifying a store URL as input.
+
+The examples below assume a store at `$TAMS` and a bearer token in `$TOKEN`:
 
 ```shell script
 TAMS=https://tams.example.com
 AUTH="Authorization: Bearer $TOKEN"
 ```
 
-**Inspect A Flow**
+**Inspect Flow**
 
 ffprobe reports the Flow's streams and duration without downloading the whole Flow:
 
@@ -51,7 +61,7 @@ ffprobe reports the Flow's streams and duration without downloading the whole Fl
 ffprobe -headers "$AUTH" -show_streams -show_format "$TAMS/flows/<flowId>"
 ```
 
-**Export A Source To A File**
+**Source To File**
 
 Reading by `source_id` opens the Flows of the Source as the streams of one input, aligned on the shared TAI timeline. Here the first video and audio Flows are copied into a single MP4 without re-encoding:
 
@@ -60,7 +70,7 @@ ffmpeg -headers "$AUTH" -i "$TAMS/flows?source_id=<sourceId>" \
   -map 0:v:0 -map 0:a:0 -c copy programme.mp4
 ```
 
-**Clip A Timerange**
+**Timerange Clipping**
 
 A `timerange` in the URL limits the read to that window. Only the segments which overlap it are fetched:
 
@@ -70,9 +80,9 @@ ffmpeg -headers "$AUTH" \
   -c copy clip.mp4
 ```
 
-<small>**NOTE**:  When the start falls part way through a GOP, the packets from the preceding keyframe are still read, as they are needed to decode the first frames. With stream copy as per the above example the frames marked as discarded are still kept, so the clip starts at that keyframe, slightly before the requested start. When re-encoding, they are decoded and then discarded, so the output starts exactly at the start of the timerange:</small>
+<small>**NOTE**: When the start falls part way through a GOP, the packets from the preceding keyframe are still read, as they are needed to decode the first frames. When using `-c copy` (as per the above example) the frames marked as discarded are still kept so the clip starts at that keyframe i.e. before the requested start. When re-encoding the frames are decoded and then discarded so the output starts exactly at the start of the timerange.</small>
 
-**Seek Within A Flow**
+**Seeking**
 
 Standard `-ss` and `-t` work as for any seekable input. Here a 10 second proxy is made starting 2 minutes in:
 
@@ -81,17 +91,17 @@ ffmpeg -headers "$AUTH" -ss 120 -t 10 -i "$TAMS/flows/<flowId>" \
   -vf scale=640:-2 -c:v libx264 -c:a aac proxy.mp4
 ```
 
-**Watch A Live Flow**
+**Live Playback**
 
-A Flow which is still `ingesting` is followed as new segments are registered. Therefore it can be processed while it is being recorded. Reading ends when the Flow is marked `closed_complete`, or when no new segments arrive within `live_timeout`:
+A Flow which is still `ingesting` is followed as new segments are registered. Reading ends when the Flow is marked `closed_complete` or when no new segments arrive within `live_timeout`:
 
 ```shell script
 ffplay -headers "$AUTH" "$TAMS/flows/<flowId>"
 ```
 
-**Join A Live Source At A Specific Time**
+**Live Catchup**
 
-Combining a Source with a timerange that is open at the end starts at that point and then keeps following the live edge. Here a recording that is still in progress is transcoded from a given time onwards, with a 30 second timeout to tolerate a stalled ingest:
+Using a timerange that is open at the end starts at the specified point and then keeps following the live edge. Here a recording that is still in progress is transcoded from a given time onwards with a 30 second timeout to tolerate a stalled ingest:
 
 ```shell script
 ffmpeg -headers "$AUTH" -live_timeout 30 \
@@ -101,11 +111,18 @@ ffmpeg -headers "$AUTH" -live_timeout 30 \
 
 ### Muxer Usage
 
-The muxer is selected with `-f tams`, and its output URL is always the store's `/flows` endpoint. How the streams map to Flows is set via `-flow_map`. Again the examples below assume a store at `$TAMS` and a bearer token in `$TOKEN`.
+The muxer is selected with `-f tams`, and its output URL is always the store's `/flows` endpoint. How the streams map to Flows is set via `-flow_map`. 
+
+The examples below assume a store at `$TAMS` and a bearer token in `$TOKEN`:
+
+```shell script
+TAMS=https://tams.example.com
+AUTH="Authorization: Bearer $TOKEN"
+```
 
 **One Flow Per Stream**
 
-Without `-flow_map` each stream becomes its own new mono Flow  registered under a new Source. (By default essence is written into a raw elementary stream where possible. In this example H.264 and AAC ADTS are used.) A Flow's label and description are set from the stream's `title` and `comment` metadata, and any other metadata becomes a Flow tag:
+Without `-flow_map` each stream becomes its own new mono Flow registered under a new Source. A Flow's label and description are set from the stream's `title` and `comment` metadata, and any other metadata becomes a Flow tag:
 
 ```shell script
 ffmpeg -i interview.mov -c:v libx264 -g 50 -c:a aac \
@@ -114,9 +131,11 @@ ffmpeg -i interview.mov -c:v libx264 -g 50 -c:a aac \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
+<small>**NOTE**: By default essence is written into a raw elementary stream where possible. In the example above H.264 and AAC ADTS are used. A different format can be specified with `-container`.</small>
+
 **Shared Container Multi Flow**
 
-Mapping video and audio to one `flow=` token writes them into one container (MP4 by default), registered as a new multi Flow with a new video Flow and a new audio Flow in its `flow_collection`. The multi Flow's own label and tags are set on its `multi_flow=` token. A new Source is also registered.
+Mapping video and audio to one `flow=` token writes them into one container registered as a new multi Flow with a new video Flow and a new audio Flow in its `flow_collection`. The multi Flow's own label and tags are set on its `multi_flow=` token. A new Source is also registered:
 
 ```shell script
 ffmpeg -i episode3.mxf -c:v libx264 -g 50 -c:a aac \
@@ -124,9 +143,11 @@ ffmpeg -i episode3.mxf -c:v libx264 -g 50 -c:a aac \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
+<small>**NOTE**: By default MP4 is used for multi Flow containers. A different format can be specified with `-container`.</small>
+
 **Live Ingest**
 
-Any live input can be recorded into the store as it arrives. The Flows are set to `ingesting` while the muxer runs and are marked `closed_complete` when it finishes. Here an SRT feed is recorded as MPEG-TS segments of 2 seconds:
+A live input can be recorded into the store as it arrives. The Flows are set to `ingesting` while the muxer runs and are marked `closed_complete` when it finishes. Here an SRT feed is recorded as MPEG-TS segments of 2 seconds:
 
 ```shell script
 ffmpeg -i "srt://0.0.0.0:9000?mode=listener" \
@@ -138,7 +159,7 @@ ffmpeg -i "srt://0.0.0.0:9000?mode=listener" \
 
 <small>**NOTE**: Segments are cut on the first keyframe after `segment_duration` so the GOP settings should match this.</small>
 
-**Upload An Existing File Without Re-Encode**
+**Ingest**
 
 Muxing with stream copy:
 
@@ -148,11 +169,11 @@ ffmpeg -i archive.mp4 -map 0:v -map 0:a -c copy \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
- <small>**NOTE**: Segments can only start on a keyframe. With stream copy the input's GOP decides the segment length. Therefore a GOP longer than `segment_duration` gives longer segments.</small>
+ <small>**NOTE**: Segments can only start on a keyframe. With `-c copy` the input's GOP decides the segment length. Therefore a GOP longer than `segment_duration` gives longer segments.</small>
 
-**Add A New Rendition To An Existing Source**
+**Add Rendition To Existing Source**
 
-Setting `source_id=` adds a new Flow to an existing Source rather than creating a new one. Here a Flow is read from the store, transcoded and written back as a lower bitrate proxy of the same Source. Setting `-start_timestamp` to the start of the original Flow's timerange places the proxy on the same part of the timeline as the original:
+Setting `source_id=` adds a new Flow to an existing Source. Here a Flow is read from the store, transcoded and written back as a lower bitrate proxy of the same Source. Setting `-start_timestamp` to the start of the original Flow's timerange places the proxy on the same part of the timeline as the original:
 
 ```shell script
 START=$(curl -s -H "$AUTH" "$TAMS/flows/<flowId>?include_timerange=true" \
@@ -165,9 +186,9 @@ ffmpeg -headers "$AUTH" -i "$TAMS/flows/<flowId>" \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
-**Append To An Existing Flow**
+**Append To Flow**
 
-Setting `id=` pins a stream to an existing Flow, and the stream's codec and essence parameters are checked against the Flow's existing details rather than overwriting them. Setting `-start_timestamp` to the end of the Flow's current timerange continues its timeline without a gap. Here a second recording is appended to an existing multi Flow, whose member Flows are found from the existing `flow_collection`:
+Setting `id=` pins a stream to an existing Flow. In this case the stream's codec and essence parameters are checked against the Flow's existing details rather than overwriting them. Setting `-start_timestamp` to the end of the Flow's current timerange continues its timeline without a gap. Here a second recording is appended to an existing multi Flow, whose member Flows are found from the existing `flow_collection`:
 
 ```shell script
 END=$(curl -s -H "$AUTH" "$TAMS/flows/<multiFlowId>?include_timerange=true" \
@@ -184,7 +205,7 @@ The code is on the `tams` branch here:
 
 [https://github.com/hootworks/FFmpeg/tree/tams](https://github.com/hootworks/FFmpeg/tree/tams)
 
-and is structured as three patch commits as would be submitted to the FFmpeg mailing list:
+It is structured as three patch commits as would be submitted to the FFmpeg mailing list:
 
 1. shared code for the TAMS data model and utility functions
 2. the TAMS demuxer
