@@ -298,6 +298,11 @@ a.tag.active {
     font-size: 0.95rem;
 }
 
+/* Markdown tables have no class, so Bootstrap gives them no bottom margin */
+.content table {
+    margin-bottom: 1rem;
+}
+
 .content a:hover,
 .content a:active {
     text-decoration: underline;
