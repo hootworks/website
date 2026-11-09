@@ -53,7 +53,7 @@ TAMS=https://tams.example.com
 AUTH="Authorization: Bearer $TOKEN"
 ```
 
-**Inspect Flow**
+_Inspect Flow_
 
 ffprobe reports the Flow's streams and duration without downloading the whole Flow:
 
@@ -61,7 +61,7 @@ ffprobe reports the Flow's streams and duration without downloading the whole Fl
 ffprobe -headers "$AUTH" -show_streams -show_format "$TAMS/flows/<flowId>"
 ```
 
-**Source To File**
+_Source To File_
 
 Reading by `source_id` opens the Flows of the Source as the streams of one input, aligned on the shared TAI timeline. Here the first video and audio Flows are copied into a single MP4 without re-encoding:
 
@@ -70,7 +70,7 @@ ffmpeg -headers "$AUTH" -i "$TAMS/flows?source_id=<sourceId>" \
   -map 0:v:0 -map 0:a:0 -c copy programme.mp4
 ```
 
-**Timerange Clipping**
+_Timerange Clipping_
 
 A `timerange` in the URL limits the read to that window. Only the segments which overlap it are fetched:
 
@@ -82,7 +82,7 @@ ffmpeg -headers "$AUTH" \
 
 <small>**NOTE**: When the start falls part way through a GOP, the packets from the preceding keyframe are still read, as they are needed to decode the first frames. When using `-c copy` (as per the above example) the frames marked as discarded are still kept so the clip starts at that keyframe i.e. before the requested start. When re-encoding the frames are decoded and then discarded so the output starts exactly at the start of the timerange.</small>
 
-**Seeking**
+_Seeking_
 
 Standard `-ss` and `-t` work as for any seekable input. Here a 10 second proxy is made starting 2 minutes in:
 
@@ -91,7 +91,7 @@ ffmpeg -headers "$AUTH" -ss 120 -t 10 -i "$TAMS/flows/<flowId>" \
   -vf scale=640:-2 -c:v libx264 -c:a aac proxy.mp4
 ```
 
-**Live Playback**
+_Live Playback_
 
 A Flow which is still `ingesting` is followed as new segments are registered. Reading ends when the Flow is marked `closed_complete` or when no new segments arrive within `live_timeout`:
 
@@ -99,7 +99,7 @@ A Flow which is still `ingesting` is followed as new segments are registered. Re
 ffplay -headers "$AUTH" "$TAMS/flows/<flowId>"
 ```
 
-**Live Catchup**
+_Live Catchup_
 
 Using a timerange that is open at the end starts at the specified point and then keeps following the live edge. Here a recording that is still in progress is transcoded from a given time onwards with a 30 second timeout to tolerate a stalled ingest:
 
@@ -120,7 +120,7 @@ TAMS=https://tams.example.com
 AUTH="Authorization: Bearer $TOKEN"
 ```
 
-**One Flow Per Stream**
+_One Flow Per Stream_
 
 Without `-flow_map` each stream becomes its own new mono Flow registered under a new Source. A Flow's label and description are set from the stream's `title` and `comment` metadata, and any other metadata becomes a Flow tag:
 
@@ -133,7 +133,7 @@ ffmpeg -i interview.mov -c:v libx264 -g 50 -c:a aac \
 
 <small>**NOTE**: By default essence is written into a raw elementary stream where possible. In the example above H.264 and AAC ADTS are used. A different format can be specified with `-container`.</small>
 
-**Shared Container Multi Flow**
+_Shared Container Multi Flow_
 
 Mapping video and audio to one `flow=` token writes them into one container registered as a new multi Flow with a new video Flow and a new audio Flow in its `flow_collection`. The multi Flow's own label and tags are set on its `multi_flow=` token. A new Source is also registered:
 
@@ -145,7 +145,7 @@ ffmpeg -i episode3.mxf -c:v libx264 -g 50 -c:a aac \
 
 <small>**NOTE**: By default MP4 is used for multi Flow containers. A different format can be specified with `-container`.</small>
 
-**Live Ingest**
+_Live Ingest_
 
 A live input can be recorded into the store as it arrives. The Flows are set to `ingesting` while the muxer runs and are marked `closed_complete` when it finishes. Here an SRT feed is recorded as MPEG-TS segments of 2 seconds:
 
@@ -159,7 +159,7 @@ ffmpeg -i "srt://0.0.0.0:9000?mode=listener" \
 
 <small>**NOTE**: Segments are cut on the first keyframe after `segment_duration` so the GOP settings should match this.</small>
 
-**Ingest**
+_Ingest_
 
 Muxing with stream copy:
 
@@ -171,7 +171,7 @@ ffmpeg -i archive.mp4 -map 0:v -map 0:a -c copy \
 
  <small>**NOTE**: Segments can only start on a keyframe. With `-c copy` the input's GOP decides the segment length. Therefore a GOP longer than `segment_duration` gives longer segments.</small>
 
-**Add Rendition To Existing Source**
+_Add Rendition To Existing Source_
 
 Setting `source_id=` adds a new Flow to an existing Source. Here a Flow is read from the store, transcoded and written back as a lower bitrate proxy of the same Source. Setting `-start_timestamp` to the start of the original Flow's timerange places the proxy on the same part of the timeline as the original:
 
@@ -186,7 +186,7 @@ ffmpeg -headers "$AUTH" -i "$TAMS/flows/<flowId>" \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
-**Append To Flow**
+_Append To Flow_
 
 Setting `id=` pins a stream to an existing Flow. In this case the stream's codec and essence parameters are checked against the Flow's existing details rather than overwriting them. Setting `-start_timestamp` to the end of the Flow's current timerange continues its timeline without a gap. Here a second recording is appended to an existing multi Flow, whose member Flows are found from the existing `flow_collection`:
 
@@ -199,7 +199,7 @@ ffmpeg -i part2.mp4 -c:v libx264 -g 50 -c:a aac \
   -headers "$AUTH" -f tams "$TAMS/flows"
 ```
 
-### Implementation Details
+### Implementation Overview
 
 The code is on the `tams` branch here:
 
@@ -219,7 +219,7 @@ The main files are:
 * `libavformat/tests/tams*.c`: unit tests, run as part of FATE
 * `doc/demuxers.texi` and `doc/muxers.texi`: documentation
 
-#### Demuxer
+### Demuxer Implementation
 
 The demuxer accepts either a single Flow or multi Flow (`/flows/<id>`) or all the Flows of a Source (`/flows?source_id=<id>`). It is optional to specify a timerange. The demuxer creates one `AVStream` per video/audio/data Flow, expanding multi Flows into their members.
 
@@ -353,7 +353,7 @@ sequenceDiagram
     end
 ```
 
-#### Muxer
+### Muxer Implementation
 
 The muxer writes each input `AVStream` to a Flow. By default every stream gets its own mono Flow. The option `-flow_map` can be used to group streams into a multi Flow sharing one container or to pin streams to existing Flows and Sources.
 
@@ -432,11 +432,11 @@ sequenceDiagram
     Mux->>TAMS: write last segment, PUT Flows (status closed_complete)
 ```
 
-#### Timeranges
+### Timerange Implementation
 
 Implementing support for Timeranges was more involved than expected. So I am recording some salient points below...
 
-**Representation**
+_Representation_
 
 | Form | Meaning | FFmpeg JSON Output |
 |------|---------|----------------------|
@@ -446,11 +446,11 @@ Implementing support for Timeranges was more involved than expected. So I am rec
 | `_` | eternity: all time | `(_)` |
 | `()` | never: the empty range | `()` |
 
-**Intersecting Timeranges**
+_Intersecting Timeranges_
 
 `ff_tams_timerange_intersect()` takes the later start and the earlier end of two timeranges. Each end is set to inclusive only if both timeranges specify inclusive. It returns never if the timeranges do not overlap.
 
-**`()` Interpretation**
+_`()` Interpretation_
 
 A Flow whose timerange is `()` means the Flow has no segments yet e.g. a live Flow which has just been created.
 
@@ -461,11 +461,11 @@ a timerange stored as `never` but in this case it means the timerange is unknown
 
 `TAMSTimeRange` keeps a separate `never` flag because never `()` and eternity `_` both have no start and no end time. Without the flag they could not be told apart, although one contains no time at all and the other contains all time.
 
-**Optional Timerange In Flow JSON**
+_Optional Timerange In Flow JSON_
 
 The spec only returns a Flow's timerange from `GET /flows/{id}` when `include_timerange=true` is given. The demuxer can't change the first request as FFmpeg opens the URL specified on the command line and probes the response before the demuxer is chosen. Therefore for a Flow without a timerange the muxer makes a second request with `include_timerange=true`.
 
-**Timerange Responses**
+_Timerange Responses_
 
 A `timerange=` in the opened URL  means different things to the store depending on the URL:
 
@@ -473,7 +473,7 @@ A `timerange=` in the opened URL  means different things to the store depending 
 * on `/flows?source_id=...` it only filters which Flows are listed: a Flow is listed if its timerange overlaps the requested one, but the `timerange` returned for it is still the Flow's whole timerange, not just the overlap. The demuxer therefore intersects each listed Flow's timerange with the requested one itself.
 * A multi Flow's own `()` timerange never overlaps, so its members need to be asked for by `/flows/{id}`
 
-**Intersected Timerange Logic**
+_Intersected Timerange Logic_
 
 A calculated intersected timerange is used to:
 
@@ -481,7 +481,13 @@ A calculated intersected timerange is used to:
 * bound the segment requests (`/flows/{id}/segments?timerange=...`), so segments outside it are never listed or downloaded
 * set where a stream ends. A live Flow's end is only how far it has been written so far, so a live read stops at the end of the URL's timerange.
 
-**Timerange Request Logic**
+_Segments aren't cut on the requested range_
+
+Segments start on keyframes, so a requested start usually falls part way through a segment. The packets before the start are still returned but flagged `AV_PKT_FLAG_DISCARD` because a decoder needs the preceding keyframe and the frames after it to decode the first frames in range. It then drops the output of the discarded ones. Decoding `[40.0_40.5)` from a Flow with a single segment covering 39.74 to 40.70 s therefore returns exactly 0.5 s of frames, while `-c copy` keeps the flagged packets so that the copy is still decodable.
+
+The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims the open-GOP leading pictures before an object's first keyframe. Within a Flow those pictures continue the previous segment, so the demuxer clears that flag and decides which packets to discard only from the segment and Flow timeranges.
+
+_Timerange Request Logic_
 
 ```mermaid
 flowchart TD
@@ -499,58 +505,55 @@ flowchart TD
     J -- "yes" --> I["use the URL timerange,<br>wait until the Flow reaches it"]
 ```
 
-**Segments aren't cut on the requested range.** Segments start on keyframes, so a requested start usually falls part way through a segment. The packets before the start are still returned, but flagged `AV_PKT_FLAG_DISCARD`: a decoder needs the preceding keyframe and the frames after it to decode the first frames in range, and drops the output of the flagged ones. Decoding `[40.0_40.5)` from a Flow with a single segment covering 39.74 to 40.70 s therefore returns exactly 0.5 s of frames, while `-c copy` keeps the flagged packets so that the copy is still decodable.
+### Further Implementation Details
 
-The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims the open-GOP leading pictures before an object's first keyframe. Within a Flow those pictures continue the previous segment, so the demuxer clears that flag and decides which packets to discard only from the segment and Flow timeranges.
+_No JSON Library_
 
-#### Further Details
+FFmpeg has no JSON parser dependency so the JSON handling is a small cursor-based parser built on `AVBPrint` covering just the TAMS schemas.
 
-**No JSON library.** FFmpeg has no JSON parser dependency, so the JSON handling is a small cursor-based parser covering just the TAMS schemas, built on `AVBPrint`.
+_Self Contained Segments_
 
-**Segments must be self-contained.** The first version of the muxer kept a single nested muxer running and simply swapped its output buffer at each segment boundary. That works for MPEG-TS, but not for MP4 (where the `moov` only appears at the end) or raw formats whose headers only appear once. The muxer now restarts the nested muxer for every segment, in the same way as FFmpeg's `segment` muxer.
+An initial implementation of the muxer kept a single nested muxer running and simply swapped its output buffer at each segment boundary. That worked for MPEG-TS but not for MP4 (where the `moov` only appears at the end) or raw formats whose headers only appear once. The muxer now restarts the nested muxer for every segment in the same way as the `segment` muxer.
 
-**Raw segments need their parameter sets.** The TAMS muxer declares global headers, as MP4 and Matroska need the codec's parameter sets (H.264/HEVC SPS and PPS, the MPEG-2 sequence header) when they write their own header, so encoders put them only in the stream's extradata. A raw elementary-stream segment has no header, so the muxer copies the extradata in front of every keyframe. That is only right when the extradata is already in start-code form: when H.264 or HEVC is stream copied from MP4, it is in MP4's own `avcC`/`hvcC` form, and the raw muxer's own conversion filter already inserts the parameter sets. Testing only with encoded input had hidden this, so stream copy is now part of the tests.
+_Raw Segment Parameter Sets_
 
-**Segments are cut on keyframes, so timeranges must be too.** Segments can only start at a keyframe, so with x264's default GOP of 250 frames a 2 second `segment_duration` really means 10 second segments. Registering the *planned* boundary rather than the actual cut point meant most of each segment was discarded on playback. This was the cause of a stuttering live stream which kicked off the latest round of testing.
+The TAMS muxer declares global headers, as MP4 and Matroska need the codec's parameter sets when they write their own header, so encoders put them only in the stream's extradata. A raw elementary-stream segment has no header, so the muxer copies the extradata in front of every keyframe. This is only correct when the extradata is already in start-code form: when H.264 or HEVC is stream copied from MP4, it is in MP4's own `avcC`/`hvcC` form, and the raw muxer's own conversion filter already inserts the parameter sets.
 
-**`ts_offset` depends on the container.** TAMS defines a segment's `ts_offset` as the value added to each container timestamp to put it on the Flow timeline. Raw elementary streams restart from zero in every segment, while MP4, MPEG-TS, Matroska and raw FLAC keep continuous timestamps (with their own shifts, e.g. MPEG-TS adds twice the mux delay). The muxer accounts for each case. When a segment has no `ts_offset` but its media timestamps lie outside the segment's timerange (e.g. objects with timestamps starting near 0 registered against a TAI timerange), the demuxer infers the offset from the first packet, as otherwise every packet would fall outside the segment.
+_Segments Timeranges Driven By Keyframes_
 
-**Following a live Flow.** A reader can't know whether a Flow is still being written just from its segments. TAMS 8.2 adds a Flow `status`, which the muxer sets to `ingesting` while writing and `closed_complete` when done. The demuxer follows it, falling back to timing heuristics (based on `segments_updated` and the observed segment length) for Flows without a status, or whose writer has disappeared.
+Segments can only start at a keyframe, so with x264's default GOP of 250 frames a 2 second `segment_duration` really means 10 second segments. Registering the *planned* boundary rather than the actual cut point causes problems.
 
-**Segment boundaries in shared containers.** When video and audio share a container which is cut on a video keyframe, a few audio packets (and, with open GOP HEVC, a few leading pictures) belong to the *previous* segment's time but live in the next object. The demuxer keeps packets that follow on from what has already been delivered, rather than discarding everything outside the segment's timerange.
+_`ts_offset` depends on the container_
 
-**Credentials.** Authentication uses standard FFmpeg `-headers`, and those headers are only replayed to the store's own host, never to the presigned storage URLs.
+TAMS defines a segment's `ts_offset` as the value added to each container timestamp to put it on the Flow timeline. Raw elementary streams restart from zero in every segment, while MP4, MPEG-TS, Matroska and raw FLAC keep continuous timestamps (with their own shifts, e.g. MPEG-TS adds twice the mux delay). The muxer accounts for each case. When a segment has no `ts_offset` but its media timestamps lie outside the segment's timerange (e.g. objects with timestamps starting near 0 registered against a TAI timerange), the demuxer infers the offset from the first packet, as otherwise every packet would fall outside the segment.
 
-### Supported Features
+_Flow Status_
 
-* TAMS API version 8.2
-* Video, audio, data (subtitle) and multi Flows
-* Demuxing a Flow or all Flows of a Source
-* Demuxing with a timerange
-* Seeking
-* Live demuxing, including joining late, and ending when the Flow is closed or stops.
-* Multi Flows with shared containers (`container_mapping`) or independent members
-* Muxing to new Flows/Sources, or appending to existing Flows, Sources and multi Flows
-* Video codecs: H.264, HEVC, VP8, VP9, AV1, MPEG-2, raw video
-* Audio codecs: AAC, MP3, MP2, AC-3, E-AC-3, FLAC, Opus, Vorbis, PCM (16/24/32-bit integer, 32/64-bit float)
-* Subtitles: SubRip, WebVTT
-* Containers: raw elementary streams, MP4, MOV, MPEG-TS, Matroska
+A reader can't know whether a Flow is still being written to just from its segments. TAMS 8.2 adds a Flow `status` which the muxer sets to `ingesting` while writing and `closed_complete` when done. The demuxer uses the `status`value falling back to timing heuristics (based on `segments_updated` and the observed segment length) for Flows without a `status` or whose writer has disappeared.
+
+_Shared Containers Segment Boundaries_
+
+When video and audio share a container which is cut on a video keyframe, a few audio packets (and with open GOP, a few leading pictures) belong to the *previous* segment's time but live in the next object. The demuxer keeps packets that follow on from what has already been delivered rather than discarding everything outside the segment's timerange.
+
+_Credentials_
+
+Authentication uses standard FFmpeg `-headers` and those headers are only replayed to the store's host, never to the presigned storage URLs.
 
 ### Not (Yet) Supported
 
 * Flows using separate initialisation segments (`init_object`, new in 8.2). These are currently rejected with a clear error
 * Demuxing from or muxing to MXF.
 * Image Flows.
-* Obtaining or refreshing OAuth tokens. An initial bearer token can be supplied via `-headers`.
+* Obtaining or refreshing OAuth tokens.
 
 ### Known Limitations
 
-* Raw video or PCM segments with no container. Based on the standard ffmpeg design the demuxer detects segment formats by probing rather than from the Flow's specified `container`. As such raw source have nothing to probe they cannot currently be handled. For this reason the muxer implementation always stores such uncompressed data in Matroska or MP4 containers.
+* Raw video or PCM segments with no container. Based on the standard ffmpeg design the demuxer detects segment formats by probing rather than from the Flow's specified `container`. Because such uncompressed data Sources have nothing to probe they cannot currently be handled. For this reason the muxer implementation always stores such uncompressed data in Matroska or MP4 containers.
 * Ogg does not split cleanly into independent segments, so Vorbis is only supported in Matroska.
 * MP4 multi Flows containing AAC are placed about 21ms late on the Flow timeline due to AAC lead-in samples (A/V sync is unaffected). This is because the TAMS muxer calculates a segment's `ts_offset` using only the reference stream which is the video in a multi Flow. That calculation doesn't include the shift caused by the audio track.
-* Seeking with `-ss` in Flows stored as raw H.264 or HEVC elementary streams is only accurate to a segment boundary. These streams carry no timestamps, so ffmpeg cannot discard the frames between the start of the segment and the seek point.
-* The muxer only requests presigned upload URLs from the store, and the demuxer prefers a segment's presigned `get_urls`. The store's credentials (`-headers`) are only sent to the store's own host. Therefore a segment which only has **non-**presigned URLs on another host can only be read if that storage allows anonymous access.
-* Strings in the store's JSON responses are read as UTF-8, and non-ASCII characters sent as literal UTF-8 are kept. However, characters sent as `\uXXXX` escapes are replaced with `?`. This mainly affects labels, descriptions and tags. However a store which escapes characters in URLs this way would not work.
+* Seeking with `-ss` in Flows stored as raw H.264 or HEVC elementary streams is only accurate to a segment boundary. These streams carry no timestamps so ffmpeg cannot discard the frames between the start of the segment and the seek point.
+* The muxer only requests presigned upload URLs from the store, and the demuxer prefers a segment's presigned `get_urls`. The store's credentials (`-headers`) are only sent to the store's own host. Therefore a segment which only has **non-presigned** URLs on another host can only be read if that storage allows anonymous access.
+* Strings in the store's JSON responses are read as UTF-8 and non-ASCII characters sent as literal UTF-8 are kept. Characters sent as `\uXXXX` escapes are replaced with `?`. This mainly affects labels, descriptions and tags.
 
 ### Testing
 
@@ -561,12 +564,12 @@ The FATE samples ([tams-fate-samples.tar.gz](/assets/download/tams-fate-samples.
 
 Manual testing has been performed against a hosted instance of the AWS open-source TAMS implementation (API 8.2):
 
-* Muxing a 6 second test source with each supported video and audio codec. Followed by demuxing by Flow and by Source, checking every frame is present and timestamps are continuous. 
+* Muxing a 6 second test source with each supported video and audio codec and then demuxing by Flow and by Source, checking every frame is present and timestamps are continuous. 
 * The same was also testing using stream copy from MP4 and MPEG-TS inputs.
 * Various scenarios for each container type including multi Flows (shared and independent), pinning to existing Flows, Sources and multi Flows or adding new ones.
 * Appending a second recording to an existing timeline without a gap.
 * Timerange requests and seeking.
-* End-to-end live scenarios involving muxing a 720p test source in real time while reading it back concurrently, by Flow and by Source. Tested with different GOP sizes, containers and codecs. Scenarios such as joining late and killing the muxer while running were also covered.
+* End-to-end live scenarios involving muxing a 720p test source in real time while reading it back concurrently by Flow and by Source. Tested with different GOP sizes, containers and codecs. Scenarios such as joining late and killing the muxer while running were also covered.
 * Reading existing third-party content from the store.
 * Fuzzing the demuxer with damaged JSON.
 
@@ -577,4 +580,4 @@ Manual testing has been performed against a hosted instance of the AWS open-sour
 
 ### Next Steps
 
-The next step is to submit the patches to the FFmpeg development mailing list for review. If you are using TAMS and need assistance, please [make contact](/contact/).
+The next step is to submit the patches to the FFmpeg development mailing list for review. If you are using TAMS and require assistance, please [make contact](/contact/).
