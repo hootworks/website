@@ -432,7 +432,7 @@ sequenceDiagram
     Mux->>TAMS: write last segment, PUT Flows (status closed_complete)
 ```
 
-### Timerange Implementation
+### Timeranges and Timestamps
 
 Implementing support for Timeranges was more involved than expected. So I am recording some salient points below...
 
@@ -446,48 +446,40 @@ _Representation_
 | `_` | eternity: all time | `(_)` |
 | `()` | never: the empty range | `()` |
 
-_Intersecting Timeranges_
-
-`ff_tams_timerange_intersect()` takes the later start and the earlier end of two timeranges. Each end is set to inclusive only if both timeranges specify inclusive. It returns never if the timeranges do not overlap.
-
-_`()` Interpretation_
-
-A Flow whose timerange is `()` means the Flow has no segments yet e.g. a live Flow which has just been created.
-
-A multi Flow whose media is all in its members' containers is also always `()`.
-
-A Flow that had **no** timerange in the JSON response also has
-a timerange stored as `never` but in this case it means the timerange is unknown.
-
 `TAMSTimeRange` keeps a separate `never` flag because never `()` and eternity `_` both have no start and no end time. Without the flag they could not be told apart, although one contains no time at all and the other contains all time.
 
-_Optional Timerange In Flow JSON_
+_Empty And Unknown Timeranges_
 
-The spec only returns a Flow's timerange from `GET /flows/{id}` when `include_timerange=true` is given. The demuxer can't change the first request as FFmpeg opens the URL specified on the command line and probes the response before the demuxer is chosen. Therefore for a Flow without a timerange the muxer makes a second request with `include_timerange=true`.
+A Flow whose timerange is `()` has no segments yet, e.g. a live Flow which has just been created.
+
+Multi Flows have two cases:
+
+* when each member has its own container, the segments are registered against the members, so the multi Flow's own timerange is always `()`.
+* when the members share a container, the segments are registered against the multi Flow, so it is the members which are `()`. The demuxer gives them the multi Flow's timerange.
+
+The spec only returns a Flow's timerange from `GET /flows/{id}` when `include_timerange=true` is given. The demuxer can't change the first request as FFmpeg opens the URL specified on the command line and probes the response before the demuxer is chosen. A Flow whose JSON has no timerange is therefore stored with no start or end, like eternity, and the demuxer requests it again with `include_timerange=true` to find out its real timerange.
 
 _Timerange Responses_
 
-A `timerange=` in the opened URL  means different things to the store depending on the URL:
+A `timerange=` in the opened URL means different things to the store depending on the URL:
 
 * on `/flows/{id}` it limits the timerange returned for the Flow.
 * on `/flows?source_id=...` it only filters which Flows are listed: a Flow is listed if its timerange overlaps the requested one, but the `timerange` returned for it is still the Flow's whole timerange, not just the overlap. The demuxer therefore intersects each listed Flow's timerange with the requested one itself.
-* A multi Flow's own `()` timerange never overlaps, so its members need to be asked for by `/flows/{id}`
+* a multi Flow with independent members has its own timerange `()`, which never overlaps, so its members need to be asked for by `/flows/{id}`.
 
-_Intersected Timerange Logic_
+_Intersecting Timeranges_
 
-A calculated intersected timerange is used to:
+`ff_tams_timerange_intersect()` takes the later start and the earlier end of two timeranges, each with the inclusivity of the timerange it came from. When both starts (or both ends) are equal, that bound is inclusive only if both are. If the result is empty it returns never.
+
+The intersection of the Flow's timerange and the URL's timerange is used to:
 
 * give each stream its duration
 * bound the segment requests (`/flows/{id}/segments?timerange=...`), so segments outside it are never listed or downloaded
 * set where a stream ends. A live Flow's end is only how far it has been written so far, so a live read stops at the end of the URL's timerange.
 
-_Segments aren't cut on the requested range_
-
-Segments start on keyframes, so a requested start usually falls part way through a segment. The packets before the start are still returned but flagged `AV_PKT_FLAG_DISCARD` because a decoder needs the preceding keyframe and the frames after it to decode the first frames in range. It then drops the output of the discarded ones. Decoding `[40.0_40.5)` from a Flow with a single segment covering 39.74 to 40.70 s therefore returns exactly 0.5 s of frames, while `-c copy` keeps the flagged packets so that the copy is still decodable.
-
-The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims the open-GOP leading pictures before an object's first keyframe. Within a Flow those pictures continue the previous segment, so the demuxer clears that flag and decides which packets to discard only from the segment and Flow timeranges.
-
 _Timerange Request Logic_
+
+Whether a Flow "is live" below is decided from its status (see _Flow Status_ under Further Implementation Details).
 
 ```mermaid
 flowchart TD
@@ -505,6 +497,24 @@ flowchart TD
     J -- "yes" --> I["use the URL timerange,<br>wait until the Flow reaches it"]
 ```
 
+_Segment Timeranges Driven By Keyframes_
+
+Segments can only start at a keyframe, so with x264's default GOP of 250 frames at 25 fps, a 2 second `segment_duration` really means 10 second segments. The muxer therefore registers each segment from its first keyframe up to the next cut, not the *planned* boundary. Registering the planned boundary would claim time the segment doesn't contain, and the next segment's timerange would overlap it.
+
+_`ts_offset` Depends On The Container_
+
+TAMS defines a segment's `ts_offset` as the value added to each container timestamp to put it on the Flow timeline. Raw elementary streams restart from zero in every segment, while MP4, MPEG-TS, Matroska and raw FLAC keep continuous timestamps (with their own shifts, e.g. MPEG-TS adds twice the mux delay). The muxer accounts for each case. When a segment has no `ts_offset` but its media timestamps lie outside the segment's timerange (e.g. objects with timestamps starting near 0 registered against a TAI timerange), the demuxer infers the offset from the first packet, as otherwise every packet would fall outside the segment.
+
+_Segments Aren't Cut On The Requested Range_
+
+Segments start on keyframes, so a requested start usually falls part way through a segment. The packets before the start are still returned but flagged `AV_PKT_FLAG_DISCARD` because a decoder needs the preceding keyframe and the frames after it to decode the first frames in range. It then drops the output of the discarded ones. Decoding `[40.0_40.5)` from a Flow with a single segment covering 39.74 to 40.70 s therefore returns exactly 0.5 s of frames, while `-c copy` keeps the flagged packets so that the copy is still decodable.
+
+The nested demuxer can set the discard flag itself, e.g. an MP4 edit list trims the open-GOP leading pictures before an object's first keyframe. Within a Flow those pictures continue the previous segment, so the demuxer clears that flag and decides which packets to discard only from the segment and Flow timeranges.
+
+_Shared Container Segment Boundaries_
+
+When video and audio share a container which is cut on a video keyframe, a few audio packets (and with open-GOP HEVC, a few leading pictures) belong to the *previous* segment's time but live in the next object. The demuxer keeps packets that follow on from what has already been delivered rather than discarding everything outside the segment's timerange.
+
 ### Further Implementation Details
 
 _No JSON Library_
@@ -519,21 +529,9 @@ _Raw Segment Parameter Sets_
 
 The TAMS muxer declares global headers, as MP4 and Matroska need the codec's parameter sets when they write their own header, so encoders put them only in the stream's extradata. A raw elementary-stream segment has no header, so the muxer copies the extradata in front of every keyframe. This is only correct when the extradata is already in start-code form: when H.264 or HEVC is stream copied from MP4, it is in MP4's own `avcC`/`hvcC` form, and the raw muxer's own conversion filter already inserts the parameter sets.
 
-_Segments Timeranges Driven By Keyframes_
-
-Segments can only start at a keyframe, so with x264's default GOP of 250 frames a 2 second `segment_duration` really means 10 second segments. Registering the *planned* boundary rather than the actual cut point causes problems.
-
-_`ts_offset` depends on the container_
-
-TAMS defines a segment's `ts_offset` as the value added to each container timestamp to put it on the Flow timeline. Raw elementary streams restart from zero in every segment, while MP4, MPEG-TS, Matroska and raw FLAC keep continuous timestamps (with their own shifts, e.g. MPEG-TS adds twice the mux delay). The muxer accounts for each case. When a segment has no `ts_offset` but its media timestamps lie outside the segment's timerange (e.g. objects with timestamps starting near 0 registered against a TAI timerange), the demuxer infers the offset from the first packet, as otherwise every packet would fall outside the segment.
-
 _Flow Status_
 
-A reader can't know whether a Flow is still being written to just from its segments. TAMS 8.2 adds a Flow `status` which the muxer sets to `ingesting` while writing and `closed_complete` when done. The demuxer uses the `status`value falling back to timing heuristics (based on `segments_updated` and the observed segment length) for Flows without a `status` or whose writer has disappeared.
-
-_Shared Containers Segment Boundaries_
-
-When video and audio share a container which is cut on a video keyframe, a few audio packets (and with open GOP, a few leading pictures) belong to the *previous* segment's time but live in the next object. The demuxer keeps packets that follow on from what has already been delivered rather than discarding everything outside the segment's timerange.
+A reader can't know whether a Flow is still being written to just from its segments. TAMS 8.2 adds a Flow `status` which the muxer sets to `ingesting` while writing and `closed_complete` when done. The demuxer uses the `status` value, falling back to timing heuristics (based on `segments_updated` and the observed segment length) for Flows without a `status` or whose writer has disappeared.
 
 _Credentials_
 
