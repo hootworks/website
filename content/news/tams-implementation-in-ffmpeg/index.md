@@ -40,7 +40,7 @@ However, a store is only useful if tools can get media in and out of it. Having 
 
 `\(^ヮ^)/`
 
-Below is an overview of how the demuxer and muxer can be used followed by some implementation details and a collection of notes made along the way.
+Below is an overview of how the demuxer and muxer can be used followed by some implementation details and a collection of notes made along the way. Any corrections to my understanding of either FFmpeg behaviour or the TAMS specification or suggestions for improvements would be happily received!
 
 ### Demuxer Usage
 
