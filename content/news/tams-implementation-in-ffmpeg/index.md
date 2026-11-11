@@ -30,7 +30,7 @@ It defines storage of media in the cloud as small time-addressable chunks rather
 
 The API spec is here: [https://github.com/bbc/tams](https://github.com/bbc/tams).
 
-Because media is stored as immutable, independently addressable segments on a shared timeline it enabled:
+Because media is stored as immutable, independently addressable segments on a shared timeline it enables:
 
 * working with content while it is still being recorded
 * making edits by reference instead of by copy
