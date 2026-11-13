@@ -361,7 +361,7 @@ sequenceDiagram
 
 The muxer writes each input `AVStream` to a Flow. By default every stream gets its own mono Flow. The option `-flow_map` can be used to group streams into a multi Flow sharing one container or to pin streams to existing Flows and Sources.
 
-Each segment is produced by a nested muxer (raw elementary stream, MP4, MOV, MPEG-TS, Matroska or Ogg), uploaded to a presigned storage URL obtained from the store and then registered against the Flow with its timerange.
+Each segment is produced by a nested muxer (raw elementary stream, MP4, MOV, MPEG-TS or Matroska), uploaded to a presigned storage URL obtained from the store and then registered against the Flow with its timerange.
 
 ```mermaid
 classDiagram
@@ -543,14 +543,15 @@ Every later segment starts at the video keyframe it was cut on.
 
 Starting from the earliest packet matters when an input's audio begins before its first video frame, as it can with MPEG-TS or live inputs. For example, if the first video frame is at 0.066s and the audio starts at 0s, registering the first segment from the video frame, as `[0:66000000_...)`, would put the audio packets at 0, 0.021, 0.043 and 0.064s before it, and readers would discard them. The segment is registered from 0s instead.
 
-Packets with negative timestamps are normally encoder priming, e.g. the 1024 samples an AAC decoder outputs before the real audio. They stay before the start of the Flow, where readers discard them, so the first audible sample is at the start of the Flow.
 
-The muxer sets the timestamps of every segment object following the first segment to be zero at the keyframe they are cut on. It sets `ts_offset` to that keyframe's position on the Flow timeline. lavf moves timestamps up when the first ones would be negative (B-frames, audio priming) and the muxer subtracts that shift from `ts_offset`.
+The muxer sets the timestamps of every segment object following the first segment to be zero at the keyframe they are cut on. It sets `ts_offset` to that keyframe's position on the Flow timeline. lavf moves timestamps up when the first ones would be negative (B-frames, audio priming) and the muxer subtracts that shift from `ts_offset`. The exception is MPEG-TS, which follows the TAMS [MPEG-TS application note](https://github.com/bbc/tams/blob/main/docs/appnotes/0002-Timing-in-MPEG-TS.md): each PTS is the Flow time at 90 kHz modulo 2^33, and `ts_offset` is the time the 33-bit counter last rolled over. The muxer also turns off the MPEG-TS muxer's own mux delay which would otherwise be added to every timestamp.
 
-There are two exceptions:
 
-* MPEG-TS follows the TAMS [MPEG-TS application note](https://github.com/bbc/tams/blob/main/docs/appnotes/0002-Timing-in-MPEG-TS.md): each PTS is the Flow time at 90 kHz modulo 2^33, and `ts_offset` is the time the 33-bit counter last rolled over. The muxer also turns off the MPEG-TS muxer's own mux delay which would otherwise be added to every timestamp.
-* Raw FLAC frames carry their sample number so FLAC segments keep continuous timestamps.
+_Audio Priming Samples_
+
+Packets with negative timestamps are normally encoder priming e.g. the 1024 samples an AAC decoder outputs before the real audio. They stay before the start of the Flow where readers discard them. Therefore the first audible sample is at the start of the Flow. Where the priming ends part way through a packet (MP3, MP2, AC-3 and E-AC-3 encoders all do this), the demuxer keeps that packet and marks the part before the Flow start as skip samples so that decoding starts exactly at the Flow start. The same trim applies when a segment starts part way through an object e.g. in an edited Flow.
+Only the first object holds priming, so the muxer writes every later object without declaring any. Otherwise Matroska's `CodecDelay`, or the MP3 Xing/LAME header from which a reader works out the decoder delay, would make the reader trim real audio from the start of every object.
+
 
 _Absent `ts_offset` Workaround_
 
@@ -584,9 +585,9 @@ _Zero-Based Segment Timestamps_
 
 _Another_ early implementation of the muxer let the nested muxer keep the input's continuous timestamps, so that each segment object started where the previous one ended. It then registered the same `ts_offset` for every segment of a Flow. Only raw elementary streams, which have no timestamps of their own, restarted at zero with a `ts_offset` per segment.
 
-That implementation relied on every demuxer honouring an object's non-zero starting timestamp. FFmpeg's own Ogg demuxer does not do this for Vorbis: it assumes a Vorbis stream starts at zero, so each Ogg segment after the first was read back at the start of the Flow.
+That implementation relied on every reader honouring an object's non-zero starting timestamp, and it tied each object to the position on the timeline where it was first written, so an object re-used elsewhere in an edited Flow still carried those timestamps. Zero-based objects avoid both.
 
-The current muxer implementation now starts every object after the first at zero and sets `ts_offset` per segment (except for MPEG-TS and raw FLAC - see _`ts_offset` Per Segment_ above).
+The current muxer implementation now starts every object after the first at zero and sets `ts_offset` per segment (except for MPEG-TS - see _`ts_offset` Per Segment_ above).
 This fits `ts_offset` being set per segment and makes each object independent of its position on the timeline.
 
 Segments written with continuous timestamps remain valid, as the demuxer applies each segment's own `ts_offset`, and a Flow can mix both kinds of segment.
@@ -619,6 +620,7 @@ Authentication uses standard FFmpeg `-headers` and those headers are only replay
 * Demuxing from or muxing to MXF.
 * Image Flows.
 * Obtaining or refreshing OAuth tokens.
+* Ogg, Vorbis, Opus and FLAC are not supported.
 
 ### Known Limitations
 
@@ -630,6 +632,7 @@ But where there are no earlier packets to prime an audio decoder (e.g. a read st
 A read starting inside a segment is primed by the discarded packets before the start and is not affected.
 Video is not affected, as every segment starts with a keyframe.
 * The muxer only requests presigned upload URLs from the store, and the demuxer prefers a segment's presigned `get_urls`. The store's credentials (`-headers`) are only sent to the store's own host. Therefore a segment which only has **non-presigned** URLs on another host can only be read if that storage allows anonymous access.
+* The demuxer skips, with a warning, any video or audio Flow whose `codec` is not a codec MIME type it knows, so the other Flows of a Source can still be read.
 * Strings in the store's JSON responses are read as UTF-8 and non-ASCII characters sent as literal UTF-8 are kept. Characters sent as `\uXXXX` escapes are replaced with `?`. This mainly affects labels, descriptions and tags.
 
 ### Testing
